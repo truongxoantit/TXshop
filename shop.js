@@ -919,7 +919,15 @@ function setQuantity(productId, quantity) {
 }
 
 function updateCartSummary() {
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    if (!cart || !Array.isArray(cart)) {
+        cart = [];
+    }
+    
+    const subtotal = cart.reduce((sum, item) => {
+        const price = item.price || 0;
+        const quantity = item.quantity || 0;
+        return sum + (price * quantity);
+    }, 0);
     const shippingFee = 30000;
     
     let discount = 0;
@@ -927,24 +935,29 @@ function updateCartSummary() {
         if (currentCoupon.type === 'percent') {
             discount = (subtotal * currentCoupon.discount) / 100;
         } else {
-            discount = currentCoupon.discount;
+            discount = currentCoupon.discount || 0;
         }
     }
     
     const total = subtotal + shippingFee - discount;
     
-    document.getElementById('subtotal').textContent = formatPrice(subtotal);
-    document.getElementById('shippingFee').textContent = formatPrice(shippingFee);
-    document.getElementById('totalAmount').textContent = formatPrice(total);
-    
+    const subtotalEl = document.getElementById('subtotal');
+    const shippingFeeEl = document.getElementById('shippingFee');
+    const totalAmountEl = document.getElementById('totalAmount');
     const discountRow = document.getElementById('discountRow');
     const discountAmount = document.getElementById('discountAmount');
     
-    if (discount > 0) {
-        discountRow.style.display = 'flex';
-        discountAmount.textContent = `-${formatPrice(discount)}`;
-    } else {
-        discountRow.style.display = 'none';
+    if (subtotalEl) subtotalEl.textContent = formatPrice(subtotal);
+    if (shippingFeeEl) shippingFeeEl.textContent = formatPrice(shippingFee);
+    if (totalAmountEl) totalAmountEl.textContent = formatPrice(total);
+    
+    if (discountRow && discountAmount) {
+        if (discount > 0) {
+            discountRow.style.display = 'flex';
+            discountAmount.textContent = `-${formatPrice(discount)}`;
+        } else {
+            discountRow.style.display = 'none';
+        }
     }
 }
 
