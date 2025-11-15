@@ -1,71 +1,3 @@
-// Sample Products Data
-const productsData = [
-    {
-        id: 1,
-        name: 'Áo Hoodie Thêu Logo',
-        category: 'Áo Hoodie',
-        price: 350000,
-        image: 'https://via.placeholder.com/300x200/667eea/ffffff?text=Hoodie',
-        description: 'Áo hoodie chất lượng cao với logo thêu tay'
-    },
-    {
-        id: 2,
-        name: 'Áo T-Shirt Thêu Hoa',
-        category: 'Áo T-Shirt',
-        price: 250000,
-        image: 'https://via.placeholder.com/300x200/764ba2/ffffff?text=T-Shirt',
-        description: 'Áo thun cotton 100% với họa tiết thêu đẹp mắt'
-    },
-    {
-        id: 3,
-        name: 'Áo Sweatshirt Thêu Chữ',
-        category: 'Áo Sweatshirt',
-        price: 320000,
-        image: 'https://via.placeholder.com/300x200/28a745/ffffff?text=Sweatshirt',
-        description: 'Áo sweatshirt ấm áp với chữ thêu tinh tế'
-    },
-    {
-        id: 4,
-        name: 'Áo Polo Thêu Logo',
-        category: 'Áo Polo',
-        price: 280000,
-        image: 'https://via.placeholder.com/300x200/dc3545/ffffff?text=Polo',
-        description: 'Áo polo lịch sự với logo thêu cao cấp'
-    },
-    {
-        id: 5,
-        name: 'Áo Lưới Thêu Họa Tiết',
-        category: 'Áo Lưới',
-        price: 180000,
-        image: 'https://via.placeholder.com/300x200/ffc107/000000?text=Mesh',
-        description: 'Áo lưới thể thao với họa tiết thêu độc đáo'
-    },
-    {
-        id: 6,
-        name: 'Baby Knotted Cap',
-        category: 'Baby Cap',
-        price: 120000,
-        image: 'https://via.placeholder.com/300x200/17a2b8/ffffff?text=Baby+Cap',
-        description: 'Mũ thêu cho bé với thiết kế dễ thương'
-    },
-    {
-        id: 7,
-        name: 'Baby Bow Embroidered',
-        category: 'Baby Bow',
-        price: 95000,
-        image: 'https://via.placeholder.com/300x200/6f42c1/ffffff?text=Baby+Bow',
-        description: 'Nơ thêu xinh xắn cho bé gái'
-    },
-    {
-        id: 8,
-        name: 'Embroidered Sleep Bag',
-        category: 'Sleep Bag',
-        price: 450000,
-        image: 'https://via.placeholder.com/300x200/20c997/ffffff?text=Sleep+Bag',
-        description: 'Túi ngủ thêu với chất liệu mềm mại'
-    }
-];
-
 // Coupon Codes
 const coupons = {
     'WELCOME10': { discount: 10, type: 'percent' },
@@ -80,12 +12,8 @@ const ADMIN_CREDENTIALS = {
     password: 'admin123' // Change this in production!
 };
 
-// App State
-let cart = JSON.parse(localStorage.getItem('cart')) || [];
-let orders = JSON.parse(localStorage.getItem('orders')) || [];
-let isAdmin = localStorage.getItem('isAdmin') === 'true';
-// Sample products với ảnh đẹp và giá hợp lý
-let productsData = JSON.parse(localStorage.getItem('products')) || [
+// Default Products Data
+const defaultProducts = [
     {
         id: 1,
         name: 'Áo Hoodie Thêu Logo Premium',
@@ -265,31 +193,51 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeApp() {
-    // Load products from localStorage or use default
-    const savedProducts = localStorage.getItem('products');
-    if (savedProducts) {
-        productsData = JSON.parse(savedProducts);
-    } else {
-        // Save default products to localStorage
-        localStorage.setItem('products', JSON.stringify(productsData));
-    }
-    
-    // Make functions global early
-    makeFunctionsGlobal();
-    
-    initFilteredProducts();
-    loadSettings();
-    checkAdminStatus();
-    setupNavigation();
-    renderProducts();
-    updateCartBadge();
-    updateFavoritesBadge();
-    setupEventListeners();
-    setupAdvancedFilter();
-    loadOrders();
-    if (isAdmin) {
-        setupAdminEventListeners();
-        loadAdminData();
+    try {
+        // Load data safely
+        cart = safeGetItem('cart', []);
+        orders = safeGetItem('orders', []);
+        isAdmin = localStorage.getItem('isAdmin') === 'true';
+        favorites = safeGetItem('favorites', []);
+        
+        // Load products from localStorage or use default
+        const savedProducts = safeGetItem('products', null);
+        if (savedProducts && Array.isArray(savedProducts) && savedProducts.length > 0) {
+            productsData = savedProducts;
+        } else {
+            // Use default products
+            productsData = [...defaultProducts];
+            safeSetItem('products', productsData);
+        }
+        
+        // Load settings
+        const savedSettings = safeGetItem('telegramSettings', null);
+        if (savedSettings && savedSettings.token && savedSettings.chatId) {
+            settings = savedSettings;
+        } else {
+            safeSetItem('telegramSettings', settings);
+        }
+        
+        // Initialize
+        initFilteredProducts();
+        checkAdminStatus();
+        setupNavigation();
+        renderProducts();
+        updateCartBadge();
+        updateFavoritesBadge();
+        setupEventListeners();
+        setupAdvancedFilter();
+        loadOrders();
+        
+        if (isAdmin) {
+            setupAdminEventListeners();
+            loadAdminData();
+        }
+        
+        console.log('TXshop initialized successfully');
+    } catch (error) {
+        console.error('Error initializing app:', error);
+        showToast('Có lỗi xảy ra khi khởi tạo ứng dụng. Vui lòng tải lại trang.', 'error');
     }
 }
 
@@ -450,7 +398,7 @@ function handleAddProduct(e) {
 }
 
 function saveProducts() {
-    localStorage.setItem('products', JSON.stringify(productsData));
+    safeSetItem('products', productsData);
 }
 
 function renderAdminProducts() {
@@ -567,7 +515,7 @@ function updateOrderStatus(orderId, newStatus) {
     const order = orders.find(o => o.id === orderId);
     if (order) {
         order.status = newStatus;
-        localStorage.setItem('orders', JSON.stringify(orders));
+        safeSetItem('orders', orders);
         renderAdminOrders();
         loadOrders();
         showToast('Đã cập nhật trạng thái đơn hàng!', 'success');
@@ -867,7 +815,7 @@ function updateQuantity(productId, change) {
 }
 
 function saveCart() {
-    localStorage.setItem('cart', JSON.stringify(cart));
+    safeSetItem('cart', cart);
 }
 
 function updateCartBadge() {
@@ -1093,7 +1041,7 @@ async function handleCheckout(e) {
         };
         
         orders.push(order);
-        localStorage.setItem('orders', JSON.stringify(orders));
+        safeSetItem('orders', orders);
         
         // Send to Telegram
         await sendToTelegram(order);
@@ -1239,11 +1187,13 @@ function loadOrders() {
 
 // Settings
 function loadSettings() {
-    if (settings.token) {
-        document.getElementById('telegramToken').value = settings.token;
+    const tokenEl = document.getElementById('telegramToken');
+    const chatIdEl = document.getElementById('telegramChatId');
+    if (tokenEl && settings.token) {
+        tokenEl.value = settings.token;
     }
-    if (settings.chatId) {
-        document.getElementById('telegramChatId').value = settings.chatId;
+    if (chatIdEl && settings.chatId) {
+        chatIdEl.value = settings.chatId;
     }
 }
 
@@ -1257,7 +1207,7 @@ function saveSettings() {
     }
     
     settings = { token, chatId };
-    localStorage.setItem('telegramSettings', JSON.stringify(settings));
+    safeSetItem('telegramSettings', settings);
     showToast('Đã lưu cài đặt thành công!', 'success');
 }
 
@@ -1324,8 +1274,7 @@ function showLoading(show) {
     }
 }
 
-// Favorites/Wishlist
-let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+// Favorites/Wishlist - Already initialized above
 
 function toggleFavorite(productId) {
     if (!productId) return;
@@ -1337,7 +1286,7 @@ function toggleFavorite(productId) {
         favorites.push(productId);
         showToast('Đã thêm vào yêu thích', 'success');
     }
-    localStorage.setItem('favorites', JSON.stringify(favorites));
+    safeSetItem('favorites', favorites);
     updateFavoritesBadge();
     renderProducts();
     if (document.getElementById('favoritesGrid')) {
@@ -1569,14 +1518,16 @@ function importData() {
             
             if (data.orders) {
                 orders = data.orders;
-                localStorage.setItem('orders', JSON.stringify(orders));
+                safeSetItem('orders', orders);
                 loadOrders();
-                renderAdminOrders();
+                if (isAdmin) {
+                    renderAdminOrders();
+                }
             }
             
             if (data.settings) {
                 settings = data.settings;
-                localStorage.setItem('telegramSettings', JSON.stringify(settings));
+                safeSetItem('telegramSettings', settings);
                 loadSettings();
             }
             
