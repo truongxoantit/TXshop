@@ -278,9 +278,11 @@ function initializeApp() {
     loadSettings();
     checkAdminStatus();
     setupNavigation();
-    renderProducts();
+    updateRenderProducts();
     updateCartBadge();
+    updateFavoritesBadge();
     setupEventListeners();
+    setupAdvancedFilter();
     loadOrders();
     if (isAdmin) {
         setupAdminEventListeners();
@@ -356,6 +358,8 @@ function showPage(pageName) {
         renderCart();
     } else if (pageName === 'orders') {
         loadOrders();
+    } else if (pageName === 'favorites') {
+        renderFavorites();
     } else if (pageName === 'admin' && isAdmin) {
         loadAdminData();
     }
@@ -397,6 +401,8 @@ function setupAdminEventListeners() {
                 renderAdminProducts();
             } else if (targetTab === 'orders') {
                 renderAdminOrders();
+            } else if (targetTab === 'export') {
+                // Export tab is ready
             }
         });
     });
@@ -694,23 +700,8 @@ function renderProducts() {
         return;
     }
     
-    productsGrid.innerHTML = filteredProducts.map(product => `
-        <div class="product-card">
-            <img src="${product.image}" alt="${product.name}" class="product-image" 
-                 loading="lazy"
-                 onerror="this.onerror=null; this.src='https://via.placeholder.com/300x200/e0e0e0/999999?text=No+Image'">
-            <div class="product-info">
-                <div class="product-name">${escapeHtml(product.name)}</div>
-                <div class="product-category">${escapeHtml(product.category)}</div>
-                <div class="product-price">${formatPrice(product.price)}</div>
-                <div class="product-actions">
-                    <button class="btn btn-primary" onclick="addToCart(${product.id})">
-                        <i class="fas fa-cart-plus"></i> Thêm vào giỏ
-                    </button>
-                </div>
-            </div>
-        </div>
-    `).join('');
+    // Use the updated render function
+    updateRenderProducts();
 }
 
 // Escape HTML to prevent XSS
@@ -1295,6 +1286,366 @@ function showLoading(show) {
     }
 }
 
+// Favorites/Wishlist
+let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+function toggleFavorite(productId) {
+    const index = favorites.indexOf(productId);
+    if (index > -1) {
+        favorites.splice(index, 1);
+        showToast('Đã xóa khỏi yêu thích', 'success');
+    } else {
+        favorites.push(productId);
+        showToast('Đã thêm vào yêu thích', 'success');
+    }
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+    updateFavoritesBadge();
+    renderProducts();
+    renderFavorites();
+}
+
+function isFavorite(productId) {
+    return favorites.includes(productId);
+}
+
+function updateFavoritesBadge() {
+    const badge = document.getElementById('favoritesBadge');
+    if (badge) {
+        badge.textContent = favorites.length;
+    }
+}
+
+function renderFavorites() {
+    const favoritesGrid = document.getElementById('favoritesGrid');
+    if (!favoritesGrid) return;
+    
+    const favoriteProducts = productsData.filter(p => favorites.includes(p.id));
+    
+    if (favoriteProducts.length === 0) {
+        favoritesGrid.innerHTML = `
+            <div class="empty-state" style="grid-column: 1/-1;">
+                <i class="fas fa-heart"></i>
+                <h3>Chưa có sản phẩm yêu thích</h3>
+                <p>Thêm sản phẩm vào yêu thích để xem lại sau</p>
+            </div>
+        `;
+        return;
+    }
+    
+    favoritesGrid.innerHTML = favoriteProducts.map(product => `
+        <div class="product-card">
+            <img src="${product.image}" alt="${product.name}" class="product-image" 
+                 loading="lazy"
+                 onerror="this.onerror=null; this.src='https://via.placeholder.com/300x200/e0e0e0/999999?text=No+Image'">
+            <div class="product-info">
+                <div class="product-name">${escapeHtml(product.name)}</div>
+                <div class="product-category">${escapeHtml(product.category)}</div>
+                <div class="product-price">${formatPrice(product.price)}</div>
+                <div class="product-actions">
+                    <button class="btn btn-primary" onclick="addToCart(${product.id})">
+                        <i class="fas fa-cart-plus"></i> Thêm vào giỏ
+                    </button>
+                    <button class="btn btn-danger btn-small" onclick="toggleFavorite(${product.id})" title="Xóa khỏi yêu thích">
+                        <i class="fas fa-heart-broken"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Product Detail Modal
+function showProductDetail(productId) {
+    const product = productsData.find(p => p.id === productId);
+    if (!product) return;
+    
+    const modal = document.getElementById('productDetailModal');
+    const nameEl = document.getElementById('productDetailName');
+    const contentEl = document.getElementById('productDetailContent');
+    
+    if (!modal || !nameEl || !contentEl) return;
+    
+    nameEl.textContent = product.name;
+    contentEl.innerHTML = `
+        <div class="product-detail-grid">
+            <div class="product-detail-image">
+                <img src="${product.image}" alt="${product.name}" 
+                     onerror="this.onerror=null; this.src='https://via.placeholder.com/400x400/e0e0e0/999999?text=No+Image'">
+            </div>
+            <div class="product-detail-info">
+                <div class="detail-category">${escapeHtml(product.category)}</div>
+                <div class="detail-price">${formatPrice(product.price)}</div>
+                <div class="detail-description">
+                    <h4>Mô tả sản phẩm:</h4>
+                    <p>${escapeHtml(product.description || 'Chưa có mô tả')}</p>
+                </div>
+                <div class="detail-actions">
+                    <button class="btn btn-primary btn-large" onclick="addToCart(${product.id}); closeProductDetail();">
+                        <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
+                    </button>
+                    <button class="btn btn-danger" onclick="toggleFavorite(${product.id})" style="margin-left: 10px;">
+                        <i class="fas ${isFavorite(product.id) ? 'fa-heart' : 'fa-heart'}"></i> 
+                        ${isFavorite(product.id) ? 'Đã yêu thích' : 'Yêu thích'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    modal.classList.add('active');
+}
+
+function closeProductDetail() {
+    const modal = document.getElementById('productDetailModal');
+    if (modal) modal.classList.remove('active');
+}
+
+// Advanced Filter
+function setupAdvancedFilter() {
+    const advancedFilterBtn = document.getElementById('advancedFilterBtn');
+    const advancedFilterPanel = document.getElementById('advancedFilterPanel');
+    const applyFilterBtn = document.getElementById('applyFilterBtn');
+    const resetFilterBtn = document.getElementById('resetFilterBtn');
+    
+    if (advancedFilterBtn && advancedFilterPanel) {
+        advancedFilterBtn.addEventListener('click', () => {
+            advancedFilterPanel.style.display = advancedFilterPanel.style.display === 'none' ? 'block' : 'none';
+        });
+    }
+    
+    if (applyFilterBtn) {
+        applyFilterBtn.addEventListener('click', applyAdvancedFilter);
+    }
+    
+    if (resetFilterBtn) {
+        resetFilterBtn.addEventListener('click', resetAdvancedFilter);
+    }
+}
+
+function applyAdvancedFilter() {
+    const minPrice = parseInt(document.getElementById('minPrice').value) || 0;
+    const maxPrice = parseInt(document.getElementById('maxPrice').value) || Infinity;
+    const sortValue = document.getElementById('advancedSort').value;
+    
+    filteredProducts = productsData.filter(product => {
+        return product.price >= minPrice && product.price <= maxPrice;
+    });
+    
+    if (sortValue) {
+        const [field, order] = sortValue.split('-');
+        filteredProducts.sort((a, b) => {
+            let aVal, bVal;
+            if (field === 'price') {
+                aVal = a.price;
+                bVal = b.price;
+            } else {
+                aVal = a.name.toLowerCase();
+                bVal = b.name.toLowerCase();
+            }
+            return order === 'asc' ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1);
+        });
+    }
+    
+    renderProducts();
+    showToast('Đã áp dụng bộ lọc', 'success');
+}
+
+function resetAdvancedFilter() {
+    document.getElementById('minPrice').value = '';
+    document.getElementById('maxPrice').value = '';
+    document.getElementById('advancedSort').value = '';
+    initFilteredProducts();
+    renderProducts();
+    showToast('Đã đặt lại bộ lọc', 'success');
+}
+
+// Export/Import Data
+function exportData(type) {
+    let data = {};
+    let filename = '';
+    
+    if (type === 'products') {
+        data = { products: productsData };
+        filename = 'txshop-products.json';
+    } else if (type === 'orders') {
+        data = { orders: orders };
+        filename = 'txshop-orders.json';
+    } else {
+        data = { products: productsData, orders: orders, settings: settings };
+        filename = 'txshop-all-data.json';
+    }
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(`Đã xuất ${type === 'all' ? 'tất cả' : type} thành công!`, 'success');
+}
+
+function importData() {
+    const fileInput = document.getElementById('importFile');
+    if (!fileInput || !fileInput.files[0]) {
+        showToast('Vui lòng chọn file!', 'error');
+        return;
+    }
+    
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+            
+            if (data.products) {
+                productsData = data.products;
+                saveProducts();
+                initFilteredProducts();
+                renderProducts();
+                renderAdminProducts();
+            }
+            
+            if (data.orders) {
+                orders = data.orders;
+                localStorage.setItem('orders', JSON.stringify(orders));
+                loadOrders();
+                renderAdminOrders();
+            }
+            
+            if (data.settings) {
+                settings = data.settings;
+                localStorage.setItem('telegramSettings', JSON.stringify(settings));
+                loadSettings();
+            }
+            
+            showToast('Đã nhập dữ liệu thành công!', 'success');
+            fileInput.value = '';
+        } catch (error) {
+            showToast('File không hợp lệ!', 'error');
+            console.error(error);
+        }
+    };
+    
+    reader.readAsText(file);
+}
+
+// Print Order
+function printOrder(orderId) {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) {
+        showToast('Không tìm thấy đơn hàng!', 'error');
+        return;
+    }
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Hóa Đơn #${order.id}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    .header { text-align: center; margin-bottom: 30px; }
+                    .order-info { margin-bottom: 20px; }
+                    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                    th { background-color: #667eea; color: white; }
+                    .total { font-size: 1.2em; font-weight: bold; text-align: right; margin-top: 20px; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>TXshop</h1>
+                    <h2>HÓA ĐƠN BÁN HÀNG</h2>
+                </div>
+                <div class="order-info">
+                    <p><strong>Mã đơn:</strong> #${order.id}</p>
+                    <p><strong>Ngày đặt:</strong> ${order.date}</p>
+                    <p><strong>Khách hàng:</strong> ${order.name}</p>
+                    <p><strong>SĐT:</strong> ${order.phone}</p>
+                    <p><strong>Địa chỉ:</strong> ${order.address}</p>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Số lượng</th>
+                            <th>Đơn giá</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${order.items.map(item => `
+                            <tr>
+                                <td>${item.name}</td>
+                                <td>${item.quantity}</td>
+                                <td>${formatPrice(item.price)}</td>
+                                <td>${formatPrice(item.total)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                <div class="total">
+                    <p>Tạm tính: ${formatPrice(order.subtotal)}</p>
+                    <p>Phí vận chuyển: ${formatPrice(order.shippingFee)}</p>
+                    ${order.discount > 0 ? `<p>Giảm giá: -${formatPrice(order.discount)}</p>` : ''}
+                    <p>Tổng cộng: ${formatPrice(order.total)}</p>
+                </div>
+            </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+}
+
+// Update renderProducts to include favorite button and detail
+function updateRenderProducts() {
+    const productsGrid = document.getElementById('productsGrid');
+    if (!productsGrid) return;
+    
+    if (filteredProducts.length === 0) {
+        productsGrid.innerHTML = `
+            <div class="empty-state" style="grid-column: 1/-1;">
+                <i class="fas fa-search"></i>
+                <h3>Không tìm thấy sản phẩm</h3>
+                <p>Thử tìm kiếm với từ khóa khác</p>
+            </div>
+        `;
+        return;
+    }
+    
+    productsGrid.innerHTML = filteredProducts.map(product => `
+        <div class="product-card">
+            <div class="product-image-wrapper">
+                <img src="${product.image}" alt="${product.name}" class="product-image" 
+                     loading="lazy"
+                     onclick="showProductDetail(${product.id})"
+                     style="cursor: pointer;"
+                     onerror="this.onerror=null; this.src='https://via.placeholder.com/300x200/e0e0e0/999999?text=No+Image'">
+                <button class="favorite-btn ${isFavorite(product.id) ? 'active' : ''}" 
+                        onclick="toggleFavorite(${product.id})" 
+                        title="${isFavorite(product.id) ? 'Xóa khỏi yêu thích' : 'Thêm vào yêu thích'}">
+                    <i class="fas fa-heart"></i>
+                </button>
+            </div>
+            <div class="product-info">
+                <div class="product-name" onclick="showProductDetail(${product.id})" style="cursor: pointer;">${escapeHtml(product.name)}</div>
+                <div class="product-category">${escapeHtml(product.category)}</div>
+                <div class="product-price">${formatPrice(product.price)}</div>
+                <div class="product-actions">
+                    <button class="btn btn-primary" onclick="addToCart(${product.id})">
+                        <i class="fas fa-cart-plus"></i> Thêm vào giỏ
+                    </button>
+                    <button class="btn btn-secondary btn-small" onclick="showProductDetail(${product.id})">
+                        <i class="fas fa-eye"></i> Chi tiết
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
 // Make functions global for onclick handlers
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
@@ -1303,4 +1654,10 @@ window.setQuantity = setQuantity;
 window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
 window.updateOrderStatus = updateOrderStatus;
+window.toggleFavorite = toggleFavorite;
+window.showProductDetail = showProductDetail;
+window.closeProductDetail = closeProductDetail;
+window.exportData = exportData;
+window.importData = importData;
+window.printOrder = printOrder;
 
