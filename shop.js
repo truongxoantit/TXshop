@@ -84,70 +84,167 @@ const ADMIN_CREDENTIALS = {
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 let orders = JSON.parse(localStorage.getItem('orders')) || [];
 let isAdmin = localStorage.getItem('isAdmin') === 'true';
+// Sample products với ảnh đẹp và giá hợp lý
 let productsData = JSON.parse(localStorage.getItem('products')) || [
     {
         id: 1,
-        name: 'Áo Hoodie Thêu Logo',
+        name: 'Áo Hoodie Thêu Logo Premium',
         category: 'Áo Hoodie',
-        price: 350000,
-        image: 'https://via.placeholder.com/300x200/667eea/ffffff?text=Hoodie',
-        description: 'Áo hoodie chất lượng cao với logo thêu tay'
+        price: 450000,
+        image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop',
+        description: 'Áo hoodie chất lượng cao, vải dày dặn, logo thêu tay tinh tế. Size S-XL'
     },
     {
         id: 2,
-        name: 'Áo T-Shirt Thêu Hoa',
+        name: 'Áo T-Shirt Thêu Hoa Hồng',
         category: 'Áo T-Shirt',
-        price: 250000,
-        image: 'https://via.placeholder.com/300x200/764ba2/ffffff?text=T-Shirt',
-        description: 'Áo thun cotton 100% với họa tiết thêu đẹp mắt'
+        price: 280000,
+        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
+        description: 'Áo thun cotton 100%, họa tiết hoa hồng thêu đẹp mắt, thoáng mát'
     },
     {
         id: 3,
-        name: 'Áo Sweatshirt Thêu Chữ',
+        name: 'Áo Sweatshirt Thêu Chữ Ký',
         category: 'Áo Sweatshirt',
-        price: 320000,
-        image: 'https://via.placeholder.com/300x200/28a745/ffffff?text=Sweatshirt',
-        description: 'Áo sweatshirt ấm áp với chữ thêu tinh tế'
+        price: 380000,
+        image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&h=400&fit=crop',
+        description: 'Áo sweatshirt ấm áp, chữ ký thêu tinh tế, form rộng thoải mái'
     },
     {
         id: 4,
-        name: 'Áo Polo Thêu Logo',
+        name: 'Áo Polo Thêu Logo Cổ Điển',
         category: 'Áo Polo',
-        price: 280000,
-        image: 'https://via.placeholder.com/300x200/dc3545/ffffff?text=Polo',
-        description: 'Áo polo lịch sự với logo thêu cao cấp'
+        price: 320000,
+        image: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop',
+        description: 'Áo polo lịch sự, logo thêu cao cấp, chất liệu cotton pha'
     },
     {
         id: 5,
-        name: 'Áo Lưới Thêu Họa Tiết',
+        name: 'Áo Lưới Thêu Họa Tiết Thể Thao',
         category: 'Áo Lưới',
-        price: 180000,
-        image: 'https://via.placeholder.com/300x200/ffc107/000000?text=Mesh',
-        description: 'Áo lưới thể thao với họa tiết thêu độc đáo'
+        price: 220000,
+        image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=400&fit=crop',
+        description: 'Áo lưới thể thao, họa tiết thêu độc đáo, thoáng mát khi vận động'
     },
     {
         id: 6,
-        name: 'Baby Knotted Cap',
+        name: 'Baby Knotted Cap Thêu Gấu',
         category: 'Baby Cap',
-        price: 120000,
-        image: 'https://via.placeholder.com/300x200/17a2b8/ffffff?text=Baby+Cap',
-        description: 'Mũ thêu cho bé với thiết kế dễ thương'
+        price: 150000,
+        image: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400&h=400&fit=crop',
+        description: 'Mũ thêu hình gấu dễ thương cho bé, chất liệu mềm mại, size 0-24 tháng'
     },
     {
         id: 7,
-        name: 'Baby Bow Embroidered',
+        name: 'Baby Bow Embroidered Hồng',
         category: 'Baby Bow',
-        price: 95000,
-        image: 'https://via.placeholder.com/300x200/6f42c1/ffffff?text=Baby+Bow',
-        description: 'Nơ thêu xinh xắn cho bé gái'
+        price: 120000,
+        image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400&h=400&fit=crop',
+        description: 'Nơ thêu màu hồng xinh xắn cho bé gái, chất liệu cao cấp'
     },
     {
         id: 8,
-        name: 'Embroidered Sleep Bag',
+        name: 'Embroidered Sleep Bag Mùa Đông',
         category: 'Sleep Bag',
-        price: 450000,
-        image: 'https://via.placeholder.com/300x200/20c997/ffffff?text=Sleep+Bag',
-        description: 'Túi ngủ thêu với chất liệu mềm mại'
+        price: 550000,
+        image: 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=400&h=400&fit=crop',
+        description: 'Túi ngủ thêu ấm áp cho mùa đông, chất liệu mềm mại, an toàn cho bé'
+    },
+    {
+        id: 9,
+        name: 'Áo Hoodie Thêu Hình Cây',
+        category: 'Áo Hoodie',
+        price: 420000,
+        image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop',
+        description: 'Áo hoodie thêu hình cây độc đáo, màu sắc đa dạng, size đầy đủ'
+    },
+    {
+        id: 10,
+        name: 'Áo T-Shirt Thêu Chữ "LOVE"',
+        category: 'Áo T-Shirt',
+        price: 250000,
+        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
+        description: 'Áo thun thêu chữ LOVE, thiết kế đơn giản nhưng ấn tượng'
+    },
+    {
+        id: 11,
+        name: 'Áo Sweatshirt Thêu Hình Mèo',
+        category: 'Áo Sweatshirt',
+        price: 360000,
+        image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&h=400&fit=crop',
+        description: 'Áo sweatshirt thêu hình mèo dễ thương, màu pastel nhẹ nhàng'
+    },
+    {
+        id: 12,
+        name: 'Áo Polo Thêu Họa Tiết Hoa',
+        category: 'Áo Polo',
+        price: 300000,
+        image: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop',
+        description: 'Áo polo thêu họa tiết hoa tinh tế, phù hợp mặc đi làm'
+    },
+    {
+        id: 13,
+        name: 'Áo Lưới Thêu Logo Thể Thao',
+        category: 'Áo Lưới',
+        price: 200000,
+        image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=400&fit=crop',
+        description: 'Áo lưới thể thao, logo thêu nổi bật, thoáng mát khi chơi thể thao'
+    },
+    {
+        id: 14,
+        name: 'Baby Cap Thêu Hình Thỏ',
+        category: 'Baby Cap',
+        price: 140000,
+        image: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400&h=400&fit=crop',
+        description: 'Mũ thêu hình thỏ ngộ nghĩnh, chất liệu mềm, bảo vệ da đầu bé'
+    },
+    {
+        id: 15,
+        name: 'Baby Bow Embroidered Xanh',
+        category: 'Baby Bow',
+        price: 110000,
+        image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400&h=400&fit=crop',
+        description: 'Nơ thêu màu xanh dương, thiết kế đơn giản nhưng thanh lịch'
+    },
+    {
+        id: 16,
+        name: 'Sleep Bag Thêu Sao',
+        category: 'Sleep Bag',
+        price: 500000,
+        image: 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=400&h=400&fit=crop',
+        description: 'Túi ngủ thêu hình sao, chất liệu cotton mềm mại, an toàn cho bé'
+    },
+    {
+        id: 17,
+        name: 'Áo Hoodie Thêu Hình Mặt Trời',
+        category: 'Áo Hoodie',
+        price: 440000,
+        image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop',
+        description: 'Áo hoodie thêu hình mặt trời năng động, màu sắc tươi sáng'
+    },
+    {
+        id: 18,
+        name: 'Áo T-Shirt Thêu Hình Máy Bay',
+        category: 'Áo T-Shirt',
+        price: 270000,
+        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
+        description: 'Áo thun thêu hình máy bay, phù hợp cho trẻ em và người lớn'
+    },
+    {
+        id: 19,
+        name: 'Áo Sweatshirt Thêu Chữ "FAMILY"',
+        category: 'Áo Sweatshirt',
+        price: 390000,
+        image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&h=400&fit=crop',
+        description: 'Áo sweatshirt thêu chữ FAMILY, ý nghĩa gia đình, phù hợp mặc cùng nhau'
+    },
+    {
+        id: 20,
+        name: 'Áo Polo Thêu Logo Minimalist',
+        category: 'Áo Polo',
+        price: 310000,
+        image: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop',
+        description: 'Áo polo logo minimalist, thiết kế tối giản, thanh lịch'
     }
 ];
 let settings = JSON.parse(localStorage.getItem('telegramSettings')) || {
@@ -155,7 +252,12 @@ let settings = JSON.parse(localStorage.getItem('telegramSettings')) || {
     chatId: '-5022971494'
 };
 let currentCoupon = null;
-let filteredProducts = [...productsData];
+let filteredProducts = [];
+
+// Initialize filtered products
+function initFilteredProducts() {
+    filteredProducts = [...productsData];
+}
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', function() {
@@ -163,6 +265,16 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeApp() {
+    // Load products from localStorage or use default
+    const savedProducts = localStorage.getItem('products');
+    if (savedProducts) {
+        productsData = JSON.parse(savedProducts);
+    } else {
+        // Save default products to localStorage
+        localStorage.setItem('products', JSON.stringify(productsData));
+    }
+    
+    initFilteredProducts();
     loadSettings();
     checkAdminStatus();
     setupNavigation();
@@ -171,6 +283,7 @@ function initializeApp() {
     setupEventListeners();
     loadOrders();
     if (isAdmin) {
+        setupAdminEventListeners();
         loadAdminData();
     }
 }
@@ -280,6 +393,10 @@ function setupAdminEventListeners() {
             
             if (targetTab === 'stats') {
                 updateStats();
+            } else if (targetTab === 'products') {
+                renderAdminProducts();
+            } else if (targetTab === 'orders') {
+                renderAdminOrders();
             }
         });
     });
@@ -294,17 +411,29 @@ function setupAdminEventListeners() {
 function handleAddProduct(e) {
     e.preventDefault();
     
+    const name = document.getElementById('productName').value.trim();
+    const category = document.getElementById('productCategory').value.trim();
+    const price = parseInt(document.getElementById('productPrice').value);
+    const image = document.getElementById('productImage').value.trim() || 'https://via.placeholder.com/300x200/e0e0e0/999999?text=No+Image';
+    const description = document.getElementById('productDescription').value.trim() || '';
+    
+    if (!name || !category || !price || price <= 0) {
+        showToast('Vui lòng điền đầy đủ thông tin sản phẩm!', 'error');
+        return;
+    }
+    
     const newProduct = {
         id: Date.now(),
-        name: document.getElementById('productName').value,
-        category: document.getElementById('productCategory').value,
-        price: parseInt(document.getElementById('productPrice').value),
-        image: document.getElementById('productImage').value || 'https://via.placeholder.com/300x200/e0e0e0/999999?text=No+Image',
-        description: document.getElementById('productDescription').value || ''
+        name: name,
+        category: category,
+        price: price,
+        image: image,
+        description: description
     };
     
     productsData.push(newProduct);
     saveProducts();
+    initFilteredProducts();
     renderProducts();
     renderAdminProducts();
     document.getElementById('addProductForm').reset();
@@ -338,18 +467,28 @@ function renderAdminProducts() {
 
 function editProduct(productId) {
     const product = productsData.find(p => p.id === productId);
-    if (!product) return;
+    if (!product) {
+        showToast('Không tìm thấy sản phẩm!', 'error');
+        return;
+    }
     
     const newName = prompt('Tên sản phẩm:', product.name);
-    if (newName === null) return;
+    if (newName === null || !newName.trim()) return;
     
     const newPrice = prompt('Giá (VNĐ):', product.price);
     if (newPrice === null) return;
     
-    product.name = newName;
-    product.price = parseInt(newPrice) || product.price;
+    const priceNum = parseInt(newPrice);
+    if (isNaN(priceNum) || priceNum <= 0) {
+        showToast('Giá không hợp lệ!', 'error');
+        return;
+    }
+    
+    product.name = newName.trim();
+    product.price = priceNum;
     
     saveProducts();
+    initFilteredProducts();
     renderProducts();
     renderAdminProducts();
     showToast('Đã cập nhật sản phẩm!', 'success');
@@ -360,6 +499,7 @@ function deleteProduct(productId) {
     
     productsData = productsData.filter(p => p.id !== productId);
     saveProducts();
+    initFilteredProducts();
     renderProducts();
     renderAdminProducts();
     showToast('Đã xóa sản phẩm!', 'success');
@@ -511,10 +651,7 @@ function setupEventListeners() {
         loginForm.addEventListener('submit', handleLogin);
     }
     
-    // Admin
-    if (isAdmin) {
-        setupAdminEventListeners();
-    }
+    // Admin - setup will be called in initializeApp if admin is logged in
     
     // Settings (admin only)
     const saveSettingsBtn = document.getElementById('saveSettingsBtn');
@@ -530,17 +667,20 @@ function setupEventListeners() {
 // Render Products
 function renderProducts() {
     const productsGrid = document.getElementById('productsGrid');
-    const categoryFilter = document.getElementById('categoryFilter');
+    if (!productsGrid) return;
     
-    // Update category filter
-    const categories = [...new Set(productsData.map(p => p.category))];
-    categoryFilter.innerHTML = '<option value="">Tất cả danh mục</option>';
-    categories.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat;
-        option.textContent = cat;
-        categoryFilter.appendChild(option);
-    });
+    const categoryFilter = document.getElementById('categoryFilter');
+    if (categoryFilter) {
+        // Update category filter
+        const categories = [...new Set(productsData.map(p => p.category))];
+        categoryFilter.innerHTML = '<option value="">Tất cả danh mục</option>';
+        categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.textContent = cat;
+            categoryFilter.appendChild(option);
+        });
+    }
     
     // Render products
     if (filteredProducts.length === 0) {
@@ -557,10 +697,11 @@ function renderProducts() {
     productsGrid.innerHTML = filteredProducts.map(product => `
         <div class="product-card">
             <img src="${product.image}" alt="${product.name}" class="product-image" 
-                 onerror="this.src='https://via.placeholder.com/300x200/e0e0e0/999999?text=No+Image'">
+                 loading="lazy"
+                 onerror="this.onerror=null; this.src='https://via.placeholder.com/300x200/e0e0e0/999999?text=No+Image'">
             <div class="product-info">
-                <div class="product-name">${product.name}</div>
-                <div class="product-category">${product.category}</div>
+                <div class="product-name">${escapeHtml(product.name)}</div>
+                <div class="product-category">${escapeHtml(product.category)}</div>
                 <div class="product-price">${formatPrice(product.price)}</div>
                 <div class="product-actions">
                     <button class="btn btn-primary" onclick="addToCart(${product.id})">
@@ -570,6 +711,13 @@ function renderProducts() {
             </div>
         </div>
     `).join('');
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // Search
@@ -859,8 +1007,14 @@ function openCheckoutModal() {
 }
 
 function closeCheckoutModal() {
-    document.getElementById('checkoutModal').classList.remove('active');
-    document.getElementById('checkoutForm').reset();
+    const modal = document.getElementById('checkoutModal');
+    const form = document.getElementById('checkoutForm');
+    if (modal) modal.classList.remove('active');
+    if (form) form.reset();
+    
+    // Hide payment info
+    const paymentInfo = document.getElementById('paymentInfo');
+    if (paymentInfo) paymentInfo.style.display = 'none';
 }
 
 // Handle Checkout
