@@ -501,43 +501,47 @@ function renderAdminOrders() {
     const adminOrdersList = document.getElementById('adminOrdersList');
     if (!adminOrdersList) return;
     
-    if (orders.length === 0) {
+    if (!orders || orders.length === 0) {
         adminOrdersList.innerHTML = '<div class="empty-state"><i class="fas fa-list-alt"></i><h3>Chưa có đơn hàng nào</h3></div>';
         return;
     }
     
-    adminOrdersList.innerHTML = orders.reverse().map(order => `
+    adminOrdersList.innerHTML = [...orders].reverse().map(order => {
+        const items = order.items || [];
+        const status = order.status || 'pending';
+        return `
         <div class="admin-order-card">
             <div class="admin-order-header">
                 <div>
-                    <div class="order-id">Đơn hàng #${order.id}</div>
-                    <div class="order-date">${order.date}</div>
+                    <div class="order-id">Đơn hàng #${order.id || 'N/A'}</div>
+                    <div class="order-date">${order.date || 'N/A'}</div>
                 </div>
-                <select class="status-select ${order.status}" onchange="updateOrderStatus('${order.id}', this.value)">
-                    <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>⏳ Chờ xử lý</option>
-                    <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>✅ Hoàn thành</option>
+                <select class="status-select ${status}" onchange="updateOrderStatus('${order.id}', this.value)">
+                    <option value="pending" ${status === 'pending' ? 'selected' : ''}>⏳ Chờ xử lý</option>
+                    <option value="completed" ${status === 'completed' ? 'selected' : ''}>✅ Hoàn thành</option>
                 </select>
             </div>
             <div class="order-items">
-                ${order.items.map(item => `
+                ${items.map(item => `
                     <div class="order-item">
-                        <span>${item.name} x${item.quantity}</span>
-                        <span>${formatPrice(item.total)}</span>
+                        <span>${escapeHtml(item.name || 'Sản phẩm')} x${item.quantity || 1}</span>
+                        <span>${formatPrice(item.total || 0)}</span>
                     </div>
                 `).join('')}
             </div>
             <div class="order-total">
                 <span>Tổng cộng:</span>
-                <span>${formatPrice(order.total)}</span>
+                <span>${formatPrice(order.total || 0)}</span>
             </div>
             <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
-                <p><strong>Khách hàng:</strong> ${order.name}</p>
-                <p><strong>SĐT:</strong> ${order.phone}</p>
-                <p><strong>Địa chỉ:</strong> ${order.address}</p>
-                ${order.note ? `<p><strong>Ghi chú:</strong> ${order.note}</p>` : ''}
+                <p><strong>Khách hàng:</strong> ${escapeHtml(order.name || 'N/A')}</p>
+                <p><strong>SĐT:</strong> ${escapeHtml(order.phone || 'N/A')}</p>
+                <p><strong>Địa chỉ:</strong> ${escapeHtml(order.address || 'N/A')}</p>
+                ${order.note ? `<p><strong>Ghi chú:</strong> ${escapeHtml(order.note)}</p>` : ''}
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 function updateOrderStatus(orderId, newStatus) {
@@ -858,8 +862,9 @@ function updateCartBadge() {
 // Render Cart
 function renderCart() {
     const cartItems = document.getElementById('cartItems');
+    if (!cartItems) return;
     
-    if (cart.length === 0) {
+    if (!cart || cart.length === 0) {
         cartItems.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-shopping-cart"></i>
@@ -871,16 +876,21 @@ function renderCart() {
         return;
     }
     
-    cartItems.innerHTML = cart.map(item => `
+    cartItems.innerHTML = cart.map(item => {
+        const quantity = item.quantity || 1;
+        const price = item.price || 0;
+        return `
         <div class="cart-item">
-            <img src="${item.image}" alt="${item.name}" class="cart-item-image"
+            <img src="${item.image || 'https://via.placeholder.com/100x100/e0e0e0/999999?text=No+Image'}" 
+                 alt="${escapeHtml(item.name || 'Sản phẩm')}" 
+                 class="cart-item-image"
                  onerror="this.src='https://via.placeholder.com/100x100/e0e0e0/999999?text=No+Image'">
             <div class="cart-item-info">
-                <div class="cart-item-name">${item.name}</div>
-                <div class="cart-item-price">${formatPrice(item.price)}</div>
+                <div class="cart-item-name">${escapeHtml(item.name || 'Sản phẩm')}</div>
+                <div class="cart-item-price">${formatPrice(price)}</div>
                 <div class="cart-item-controls">
                     <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
-                    <input type="number" class="quantity-input" value="${item.quantity}" 
+                    <input type="number" class="quantity-input" value="${quantity}" 
                            min="1" onchange="setQuantity(${item.id}, this.value)">
                     <button class="quantity-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
                     <button class="remove-btn" onclick="removeFromCart(${item.id})">
@@ -888,9 +898,10 @@ function renderCart() {
                     </button>
                 </div>
             </div>
-            <div class="cart-item-total">${formatPrice(item.price * item.quantity)}</div>
+            <div class="cart-item-total">${formatPrice(price * quantity)}</div>
         </div>
-    `).join('');
+    `;
+    }).join('');
     
     updateCartSummary();
 }
@@ -939,7 +950,13 @@ function updateCartSummary() {
 
 // Coupon
 function applyCoupon() {
-    const code = document.getElementById('couponCode').value.toUpperCase().trim();
+    const couponInput = document.getElementById('couponCode');
+    if (!couponInput) {
+        showToast('Không tìm thấy ô nhập mã giảm giá', 'error');
+        return;
+    }
+    
+    const code = couponInput.value.toUpperCase().trim();
     
     if (!code) {
         showToast('Vui lòng nhập mã giảm giá', 'error');
@@ -1030,34 +1047,71 @@ function closeCheckoutModal() {
 async function handleCheckout(e) {
     e.preventDefault();
     
+    if (!cart || cart.length === 0) {
+        showToast('Giỏ hàng trống!', 'error');
+        return;
+    }
+    
     if (!settings.token || !settings.chatId) {
         showToast('Vui lòng cấu hình Telegram trong phần Cài Đặt!', 'error');
         closeCheckoutModal();
-        // Switch to settings page
-        document.querySelector('[data-page="settings"]').click();
+        // Switch to admin page if admin, otherwise show message
+        if (isAdmin) {
+            setTimeout(() => {
+                const adminBtn = document.querySelector('[data-page="admin"]');
+                if (adminBtn) adminBtn.click();
+            }, 500);
+        }
+        return;
+    }
+    
+    const nameEl = document.getElementById('customerName');
+    const phoneEl = document.getElementById('customerPhone');
+    const emailEl = document.getElementById('customerEmail');
+    const addressEl = document.getElementById('customerAddress');
+    const noteEl = document.getElementById('orderNote');
+    const paymentEl = document.getElementById('paymentMethod');
+    
+    if (!nameEl || !phoneEl || !addressEl || !paymentEl) {
+        showToast('Không tìm thấy form đặt hàng', 'error');
         return;
     }
     
     const formData = {
-        name: document.getElementById('customerName').value,
-        phone: document.getElementById('customerPhone').value,
-        email: document.getElementById('customerEmail').value,
-        address: document.getElementById('customerAddress').value,
-        note: document.getElementById('orderNote').value,
-        paymentMethod: document.getElementById('paymentMethod').value,
-        items: cart.map(item => ({
-            name: item.name,
-            quantity: item.quantity,
-            price: item.price,
-            total: item.price * item.quantity
-        })),
-        subtotal: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+        name: nameEl.value.trim(),
+        phone: phoneEl.value.trim(),
+        email: emailEl ? emailEl.value.trim() : '',
+        address: addressEl.value.trim(),
+        note: noteEl ? noteEl.value.trim() : '',
+        paymentMethod: paymentEl.value,
+        items: cart.map(item => {
+            const quantity = item.quantity || 1;
+            const price = item.price || 0;
+            return {
+                name: item.name || 'Sản phẩm',
+                quantity: quantity,
+                price: price,
+                total: price * quantity
+            };
+        }),
+        subtotal: cart.reduce((sum, item) => {
+            const price = item.price || 0;
+            const quantity = item.quantity || 0;
+            return sum + (price * quantity);
+        }, 0),
         shippingFee: 30000,
-        discount: currentCoupon ? (currentCoupon.type === 'percent' 
-            ? (cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) * currentCoupon.discount) / 100
-            : currentCoupon.discount) : 0,
+        discount: 0,
         total: 0
     };
+    
+    // Calculate discount
+    if (currentCoupon) {
+        if (currentCoupon.type === 'percent') {
+            formData.discount = (formData.subtotal * currentCoupon.discount) / 100;
+        } else {
+            formData.discount = currentCoupon.discount || 0;
+        }
+    }
     
     formData.total = formData.subtotal + formData.shippingFee - formData.discount;
     
@@ -1412,11 +1466,11 @@ function showProductDetail(productId) {
                     <p>${escapeHtml(product.description || 'Chưa có mô tả')}</p>
                 </div>
                 <div class="detail-actions">
-                    <button class="btn btn-primary btn-large" onclick="addToCart(${product.id}); closeProductDetail();">
+                    <button class="btn btn-primary btn-large" onclick="addToCart(${product.id}); setTimeout(() => closeProductDetail(), 500);">
                         <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
                     </button>
                     <button class="btn btn-danger" onclick="toggleFavorite(${product.id})" style="margin-left: 10px;">
-                        <i class="fas ${isFavorite(product.id) ? 'fa-heart' : 'fa-heart'}"></i> 
+                        <i class="fas fa-heart"></i> 
                         ${isFavorite(product.id) ? 'Đã yêu thích' : 'Yêu thích'}
                     </button>
                 </div>
