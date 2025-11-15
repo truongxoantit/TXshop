@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TXshop - Cửa Hàng Online</title>
+    <link rel="stylesheet" href="shop.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-store"></i>
+                    <span>TXshop</span>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn active" data-page="home">
+                        <i class="fas fa-home"></i> Trang Chủ
+                    </button>
+                    <button class="nav-btn" data-page="cart">
+                        <i class="fas fa-shopping-cart"></i> Giỏ Hàng
+                        <span class="cart-badge" id="cartBadge">0</span>
+                    </button>
+                    <button class="nav-btn" data-page="orders">
+                        <i class="fas fa-list-alt"></i> Đơn Hàng
+                    </button>
+                    <button class="nav-btn admin-only" data-page="admin" id="adminNavBtn" style="display: none;">
+                        <i class="fas fa-user-shield"></i> Quản Trị
+                    </button>
+                    <button class="nav-btn" id="loginBtn">
+                        <i class="fas fa-sign-in-alt"></i> Đăng Nhập
+                    </button>
+                    <button class="nav-btn admin-only" id="logoutBtn" style="display: none;">
+                        <i class="fas fa-sign-out-alt"></i> Đăng Xuất
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home Page -->
+        <div class="page active" id="home-page">
+            <div class="container">
+                <!-- Search and Filter -->
+                <div class="search-filter-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Tìm kiếm sản phẩm...">
+                    </div>
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">Tất cả danh mục</option>
+                    </select>
+                    <select id="priceFilter" class="filter-select">
+                        <option value="">Tất cả giá</option>
+                        <option value="0-100000">Dưới 100.000đ</option>
+                        <option value="100000-300000">100.000đ - 300.000đ</option>
+                        <option value="300000-500000">300.000đ - 500.000đ</option>
+                        <option value="500000-999999999">Trên 500.000đ</option>
+                    </select>
+                    <button class="btn btn-secondary" id="sortBtn">
+                        <i class="fas fa-sort"></i> Sắp xếp
+                    </button>
+                </div>
+
+                <!-- Products Grid -->
+                <div class="products-grid" id="productsGrid">
+                    <!-- Products will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Page -->
+        <div class="page" id="cart-page">
+            <div class="container">
+                <h2 class="page-title">
+                    <i class="fas fa-shopping-cart"></i> Giỏ Hàng
+                </h2>
+                <div class="cart-content">
+                    <div class="cart-items" id="cartItems">
+                        <!-- Cart items will be loaded here -->
+                    </div>
+                    <div class="cart-summary">
+                        <div class="summary-card">
+                            <h3>Tóm Tắt Đơn Hàng</h3>
+                            <div class="summary-row">
+                                <span>Tạm tính:</span>
+                                <span id="subtotal">0đ</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Phí vận chuyển:</span>
+                                <span id="shippingFee">30.000đ</span>
+                            </div>
+                            <div class="summary-row discount-row" id="discountRow" style="display: none;">
+                                <span>Giảm giá:</span>
+                                <span id="discountAmount" class="discount">-0đ</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span>Tổng cộng:</span>
+                                <span id="totalAmount">30.000đ</span>
+                            </div>
+                            <div class="coupon-section">
+                                <input type="text" id="couponCode" placeholder="Nhập mã giảm giá">
+                                <button class="btn btn-small" id="applyCouponBtn">Áp dụng</button>
+                            </div>
+                            <button class="btn btn-primary btn-large" id="checkoutBtn">
+                                <i class="fas fa-check"></i> Đặt Hàng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Checkout Modal -->
+        <div class="modal" id="checkoutModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Thông Tin Đặt Hàng</h2>
+                    <button class="modal-close" id="closeModal">&times;</button>
+                </div>
+                <form id="checkoutForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Họ và Tên *</label>
+                        <input type="text" id="customerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-phone"></i> Số Điện Thoại *</label>
+                        <input type="tel" id="customerPhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="customerEmail">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt"></i> Địa Chỉ Giao Hàng *</label>
+                        <textarea id="customerAddress" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-comment"></i> Ghi Chú</label>
+                        <textarea id="orderNote" rows="2" placeholder="Ghi chú thêm cho đơn hàng..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-money-bill-wave"></i> Phương Thức Thanh Toán</label>
+                        <select id="paymentMethod">
+                            <option value="cod">Thanh toán khi nhận hàng (COD)</option>
+                            <option value="bank">Chuyển khoản ngân hàng</option>
+                            <option value="momo">Ví MoMo</option>
+                        </select>
+                    </div>
+                    <div class="payment-info" id="paymentInfo" style="display: none;">
+                        <div class="payment-details">
+                            <h4><i class="fas fa-university"></i> Thông Tin Thanh Toán</h4>
+                            <p><strong>Ngân hàng:</strong> Techcombank</p>
+                            <p><strong>Số tài khoản:</strong> <span id="bankAccount">99999996789</span></p>
+                            <p><strong>Chủ tài khoản:</strong> LUONG VAN TRUONG</p>
+                            <div class="qr-code-section">
+                                <p><strong>Quét QR để thanh toán:</strong></p>
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=99999996789" alt="QR Code Techcombank" id="qrCodeImage" style="max-width: 200px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                                <p style="font-size: 0.85rem; color: #666; margin-top: 10px;">Vui lòng chuyển khoản đúng số tiền và ghi chú mã đơn hàng</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="order-summary-preview">
+                        <h4>Tóm Tắt Đơn Hàng:</h4>
+                        <div id="orderPreview"></div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelOrderBtn">Hủy</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Gửi Đơn Hàng
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Orders Page -->
+        <div class="page" id="orders-page">
+            <div class="container">
+                <h2 class="page-title">
+                    <i class="fas fa-list-alt"></i> Lịch Sử Đơn Hàng
+                </h2>
+                <div class="orders-list" id="ordersList">
+                    <!-- Orders will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Login Page -->
+        <div class="page" id="login-page">
+            <div class="container">
+                <div class="login-container">
+                    <div class="login-card">
+                        <h2><i class="fas fa-user-shield"></i> Đăng Nhập Admin</h2>
+                        <form id="loginForm">
+                            <div class="form-group">
+                                <label><i class="fas fa-user"></i> Tên đăng nhập</label>
+                                <input type="text" id="adminUsername" required autocomplete="username">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-lock"></i> Mật khẩu</label>
+                                <input type="password" id="adminPassword" required autocomplete="current-password">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-large">
+                                <i class="fas fa-sign-in-alt"></i> Đăng Nhập
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Page -->
+        <div class="page" id="admin-page">
+            <div class="container">
+                <h2 class="page-title">
+                    <i class="fas fa-user-shield"></i> Quản Trị Cửa Hàng
+                </h2>
+                
+                <div class="admin-tabs">
+                    <button class="admin-tab-btn active" data-admin-tab="products">Quản Lý Sản Phẩm</button>
+                    <button class="admin-tab-btn" data-admin-tab="orders">Quản Lý Đơn Hàng</button>
+                    <button class="admin-tab-btn" data-admin-tab="telegram">Cài Đặt Telegram</button>
+                    <button class="admin-tab-btn" data-admin-tab="stats">Thống Kê</button>
+                </div>
+
+                <!-- Products Management -->
+                <div class="admin-tab-content active" id="admin-products">
+                    <div class="admin-section">
+                        <h3><i class="fas fa-box"></i> Thêm Sản Phẩm Mới</h3>
+                        <form id="addProductForm" class="admin-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Tên sản phẩm *</label>
+                                    <input type="text" id="productName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Danh mục *</label>
+                                    <input type="text" id="productCategory" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Giá (VNĐ) *</label>
+                                    <input type="number" id="productPrice" required min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label>Link ảnh</label>
+                                    <input type="url" id="productImage" placeholder="https://...">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Mô tả</label>
+                                <textarea id="productDescription" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Thêm Sản Phẩm
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="admin-section">
+                        <h3><i class="fas fa-list"></i> Danh Sách Sản Phẩm</h3>
+                        <div class="admin-products-list" id="adminProductsList">
+                            <!-- Products will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Management -->
+                <div class="admin-tab-content" id="admin-orders">
+                    <div class="admin-orders-list" id="adminOrdersList">
+                        <!-- Orders will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Telegram Settings -->
+                <div class="admin-tab-content" id="admin-telegram">
+                    <div class="settings-card">
+                        <div class="form-group">
+                            <label><i class="fab fa-telegram"></i> Telegram Bot Token *</label>
+                            <input type="text" id="telegramToken" placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz">
+                            <small>Lấy token từ @BotFather trên Telegram</small>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user-circle"></i> Chat ID / Group ID *</label>
+                            <input type="text" id="telegramChatId" placeholder="123456789 hoặc -123456789">
+                            <small>Lấy Chat ID từ @userinfobot hoặc Group ID từ @getidsbot</small>
+                        </div>
+                        <button class="btn btn-primary" id="saveSettingsBtn">
+                            <i class="fas fa-save"></i> Lưu Cài Đặt
+                        </button>
+                        <div class="test-section">
+                            <button class="btn btn-secondary" id="testTelegramBtn">
+                                <i class="fas fa-paper-plane"></i> Test Gửi Tin Nhắn
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="admin-tab-content" id="admin-stats">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #667eea;">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalProducts">0</h3>
+                                <p>Tổng Sản Phẩm</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #28a745;">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalOrders">0</h3>
+                                <p>Tổng Đơn Hàng</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #ffc107;">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="pendingOrders">0</h3>
+                                <p>Đơn Chờ Xử Lý</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #dc3545;">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalRevenue">0đ</h3>
+                                <p>Tổng Doanh Thu</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification Toast -->
+    <div class="toast" id="toast">
+        <span id="toastMessage"></span>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="shop.js"></script>
+</body>
+</html>
+
