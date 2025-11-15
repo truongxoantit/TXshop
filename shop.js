@@ -27,152 +27,152 @@ const defaultProducts = [
         name: 'Áo T-Shirt Thêu Hoa Hồng',
         category: 'Áo T-Shirt',
         price: 280000,
-        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
-        description: 'Áo thun cotton 100%, họa tiết hoa hồng thêu đẹp mắt, thoáng mát'
+        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&h=600&fit=crop&q=80',
+        description: 'Áo thun cotton 100%, họa tiết hoa hồng thêu đẹp mắt, thoáng mát. Form rộng rãi, dễ mặc.'
     },
     {
         id: 3,
         name: 'Áo Sweatshirt Thêu Chữ Ký',
         category: 'Áo Sweatshirt',
         price: 380000,
-        image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&h=400&fit=crop',
-        description: 'Áo sweatshirt ấm áp, chữ ký thêu tinh tế, form rộng thoải mái'
+        image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=600&h=600&fit=crop&q=80',
+        description: 'Áo sweatshirt ấm áp, chữ ký thêu tinh tế, form rộng thoải mái. Chất liệu mềm mại, giữ ấm tốt.'
     },
     {
         id: 4,
         name: 'Áo Polo Thêu Logo Cổ Điển',
         category: 'Áo Polo',
         price: 320000,
-        image: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop',
-        description: 'Áo polo lịch sự, logo thêu cao cấp, chất liệu cotton pha'
+        image: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=600&h=600&fit=crop&q=80',
+        description: 'Áo polo lịch sự, logo thêu cao cấp, chất liệu cotton pha. Phù hợp mặc đi làm, đi chơi.'
     },
     {
         id: 5,
         name: 'Áo Lưới Thêu Họa Tiết Thể Thao',
         category: 'Áo Lưới',
         price: 220000,
-        image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=400&fit=crop',
-        description: 'Áo lưới thể thao, họa tiết thêu độc đáo, thoáng mát khi vận động'
+        image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=600&fit=crop&q=80',
+        description: 'Áo lưới thể thao, họa tiết thêu độc đáo, thoáng mát khi vận động. Co giãn tốt, không bám mồ hôi.'
     },
     {
         id: 6,
         name: 'Baby Knotted Cap Thêu Gấu',
         category: 'Baby Cap',
         price: 150000,
-        image: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400&h=400&fit=crop',
-        description: 'Mũ thêu hình gấu dễ thương cho bé, chất liệu mềm mại, size 0-24 tháng'
+        image: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=600&h=600&fit=crop&q=80',
+        description: 'Mũ thêu hình gấu dễ thương cho bé, chất liệu mềm mại, size 0-24 tháng. Bảo vệ da đầu khỏi nắng.'
     },
     {
         id: 7,
         name: 'Baby Bow Embroidered Hồng',
         category: 'Baby Bow',
         price: 120000,
-        image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400&h=400&fit=crop',
-        description: 'Nơ thêu màu hồng xinh xắn cho bé gái, chất liệu cao cấp'
+        image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=600&h=600&fit=crop&q=80',
+        description: 'Nơ thêu màu hồng xinh xắn cho bé gái, chất liệu cao cấp. Dễ thương, an toàn cho da bé.'
     },
     {
         id: 8,
         name: 'Embroidered Sleep Bag Mùa Đông',
         category: 'Sleep Bag',
         price: 550000,
-        image: 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=400&h=400&fit=crop',
-        description: 'Túi ngủ thêu ấm áp cho mùa đông, chất liệu mềm mại, an toàn cho bé'
+        image: 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=600&h=600&fit=crop&q=80',
+        description: 'Túi ngủ thêu ấm áp cho mùa đông, chất liệu mềm mại, an toàn cho bé. Giữ ấm tốt, dễ vệ sinh.'
     },
     {
         id: 9,
         name: 'Áo Hoodie Thêu Hình Cây',
         category: 'Áo Hoodie',
         price: 420000,
-        image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop',
-        description: 'Áo hoodie thêu hình cây độc đáo, màu sắc đa dạng, size đầy đủ'
+        image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600&h=600&fit=crop&q=80',
+        description: 'Áo hoodie thêu hình cây độc đáo, màu sắc đa dạng, size đầy đủ. Thiết kế trẻ trung, năng động.'
     },
     {
         id: 10,
         name: 'Áo T-Shirt Thêu Chữ "LOVE"',
         category: 'Áo T-Shirt',
         price: 250000,
-        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
-        description: 'Áo thun thêu chữ LOVE, thiết kế đơn giản nhưng ấn tượng'
+        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&h=600&fit=crop&q=80',
+        description: 'Áo thun thêu chữ LOVE, thiết kế đơn giản nhưng ấn tượng. Phù hợp mọi lứa tuổi.'
     },
     {
         id: 11,
         name: 'Áo Sweatshirt Thêu Hình Mèo',
         category: 'Áo Sweatshirt',
         price: 360000,
-        image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&h=400&fit=crop',
-        description: 'Áo sweatshirt thêu hình mèo dễ thương, màu pastel nhẹ nhàng'
+        image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=600&h=600&fit=crop&q=80',
+        description: 'Áo sweatshirt thêu hình mèo dễ thương, màu pastel nhẹ nhàng. Form rộng, thoải mái.'
     },
     {
         id: 12,
         name: 'Áo Polo Thêu Họa Tiết Hoa',
         category: 'Áo Polo',
         price: 300000,
-        image: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop',
-        description: 'Áo polo thêu họa tiết hoa tinh tế, phù hợp mặc đi làm'
+        image: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=600&h=600&fit=crop&q=80',
+        description: 'Áo polo thêu họa tiết hoa tinh tế, phù hợp mặc đi làm. Lịch sự, thanh lịch.'
     },
     {
         id: 13,
         name: 'Áo Lưới Thêu Logo Thể Thao',
         category: 'Áo Lưới',
         price: 200000,
-        image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=400&fit=crop',
-        description: 'Áo lưới thể thao, logo thêu nổi bật, thoáng mát khi chơi thể thao'
+        image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=600&fit=crop&q=80',
+        description: 'Áo lưới thể thao, logo thêu nổi bật, thoáng mát khi chơi thể thao. Chất liệu nhẹ, bền.'
     },
     {
         id: 14,
         name: 'Baby Cap Thêu Hình Thỏ',
         category: 'Baby Cap',
         price: 140000,
-        image: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400&h=400&fit=crop',
-        description: 'Mũ thêu hình thỏ ngộ nghĩnh, chất liệu mềm, bảo vệ da đầu bé'
+        image: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=600&h=600&fit=crop&q=80',
+        description: 'Mũ thêu hình thỏ ngộ nghĩnh, chất liệu mềm, bảo vệ da đầu bé. Dễ thương, an toàn.'
     },
     {
         id: 15,
         name: 'Baby Bow Embroidered Xanh',
         category: 'Baby Bow',
         price: 110000,
-        image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400&h=400&fit=crop',
-        description: 'Nơ thêu màu xanh dương, thiết kế đơn giản nhưng thanh lịch'
+        image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=600&h=600&fit=crop&q=80',
+        description: 'Nơ thêu màu xanh dương, thiết kế đơn giản nhưng thanh lịch. Chất liệu cao cấp.'
     },
     {
         id: 16,
         name: 'Sleep Bag Thêu Sao',
         category: 'Sleep Bag',
         price: 500000,
-        image: 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=400&h=400&fit=crop',
-        description: 'Túi ngủ thêu hình sao, chất liệu cotton mềm mại, an toàn cho bé'
+        image: 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=600&h=600&fit=crop&q=80',
+        description: 'Túi ngủ thêu hình sao, chất liệu cotton mềm mại, an toàn cho bé. Giữ ấm, dễ vệ sinh.'
     },
     {
         id: 17,
         name: 'Áo Hoodie Thêu Hình Mặt Trời',
         category: 'Áo Hoodie',
         price: 440000,
-        image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop',
-        description: 'Áo hoodie thêu hình mặt trời năng động, màu sắc tươi sáng'
+        image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600&h=600&fit=crop&q=80',
+        description: 'Áo hoodie thêu hình mặt trời năng động, màu sắc tươi sáng. Form rộng, thoải mái.'
     },
     {
         id: 18,
         name: 'Áo T-Shirt Thêu Hình Máy Bay',
         category: 'Áo T-Shirt',
         price: 270000,
-        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
-        description: 'Áo thun thêu hình máy bay, phù hợp cho trẻ em và người lớn'
+        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&h=600&fit=crop&q=80',
+        description: 'Áo thun thêu hình máy bay, phù hợp cho trẻ em và người lớn. Thiết kế độc đáo.'
     },
     {
         id: 19,
         name: 'Áo Sweatshirt Thêu Chữ "FAMILY"',
         category: 'Áo Sweatshirt',
         price: 390000,
-        image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&h=400&fit=crop',
-        description: 'Áo sweatshirt thêu chữ FAMILY, ý nghĩa gia đình, phù hợp mặc cùng nhau'
+        image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=600&h=600&fit=crop&q=80',
+        description: 'Áo sweatshirt thêu chữ FAMILY, ý nghĩa gia đình, phù hợp mặc cùng nhau. Ấm áp, thoải mái.'
     },
     {
         id: 20,
         name: 'Áo Polo Thêu Logo Minimalist',
         category: 'Áo Polo',
         price: 310000,
-        image: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop',
-        description: 'Áo polo logo minimalist, thiết kế tối giản, thanh lịch'
+        image: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=600&h=600&fit=crop&q=80',
+        description: 'Áo polo logo minimalist, thiết kế tối giản, thanh lịch. Phù hợp mọi dịp.'
     }
 ];
 
@@ -366,21 +366,26 @@ function setupAdminEventListeners() {
         btn.addEventListener('click', () => {
             const targetTab = btn.getAttribute('data-admin-tab');
             
+            // Remove active from all tabs and contents
             adminTabBtns.forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
             
+            // Add active to clicked tab
             btn.classList.add('active');
             const targetContent = document.getElementById(`admin-${targetTab}`);
             if (targetContent) {
                 targetContent.classList.add('active');
             }
             
+            // Load data for specific tab
             if (targetTab === 'stats') {
                 updateStats();
             } else if (targetTab === 'products') {
                 renderAdminProducts();
             } else if (targetTab === 'orders') {
                 renderAdminOrders();
+            } else if (targetTab === 'telegram') {
+                loadSettings();
             } else if (targetTab === 'export') {
                 // Export tab is ready
             }
@@ -391,6 +396,17 @@ function setupAdminEventListeners() {
     const addProductForm = document.getElementById('addProductForm');
     if (addProductForm) {
         addProductForm.addEventListener('submit', handleAddProduct);
+    }
+    
+    // Settings buttons
+    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    if (saveSettingsBtn) {
+        saveSettingsBtn.addEventListener('click', saveSettings);
+    }
+    
+    const testTelegramBtn = document.getElementById('testTelegramBtn');
+    if (testTelegramBtn) {
+        testTelegramBtn.addEventListener('click', testTelegram);
     }
 }
 
@@ -1239,8 +1255,9 @@ function getPaymentMethodText(method) {
 // Orders
 function loadOrders() {
     const ordersList = document.getElementById('ordersList');
+    if (!ordersList) return;
     
-    if (orders.length === 0) {
+    if (!orders || orders.length === 0) {
         ordersList.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-list-alt"></i>
