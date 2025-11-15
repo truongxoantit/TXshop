@@ -540,7 +540,7 @@ function renderAdminOrders() {
                     <div class="order-id">Đơn hàng #${order.id || 'N/A'}</div>
                     <div class="order-date">${order.date || 'N/A'}</div>
                 </div>
-                <select class="status-select ${status}" onchange="updateOrderStatus('${order.id}', this.value)">
+                <select class="status-select ${status}" onchange="updateOrderStatus('${order.id || ''}', this.value)">
                     <option value="pending" ${status === 'pending' ? 'selected' : ''}>⏳ Chờ xử lý</option>
                     <option value="completed" ${status === 'completed' ? 'selected' : ''}>✅ Hoàn thành</option>
                 </select>
@@ -1295,37 +1295,41 @@ function loadOrders() {
         return;
     }
     
-    ordersList.innerHTML = orders.reverse().map(order => `
+    ordersList.innerHTML = [...orders].reverse().map(order => {
+        const items = order.items || [];
+        const status = order.status || 'pending';
+        const orderId = order.id || 'N/A';
+        return `
         <div class="order-card">
             <div class="order-header">
                 <div>
-                    <div class="order-id">Đơn hàng #${order.id}</div>
-                    <div class="order-date">${order.date}</div>
+                    <div class="order-id">Đơn hàng #${orderId}</div>
+                    <div class="order-date">${order.date || 'N/A'}</div>
                 </div>
-                <div class="order-status ${order.status}">
-                    ${order.status === 'pending' ? '⏳ Chờ xử lý' : '✅ Hoàn thành'}
+                <div class="order-status ${status}">
+                    ${status === 'pending' ? '⏳ Chờ xử lý' : '✅ Hoàn thành'}
                 </div>
             </div>
             <div class="order-items">
-                ${order.items.map(item => `
+                ${items.map(item => `
                     <div class="order-item">
-                        <span>${item.name} x${item.quantity}</span>
-                        <span>${formatPrice(item.total)}</span>
+                        <span>${escapeHtml(item.name || 'Sản phẩm')} x${item.quantity || 1}</span>
+                        <span>${formatPrice(item.total || 0)}</span>
                     </div>
                 `).join('')}
             </div>
             <div class="order-total">
                 <span>Tổng cộng:</span>
-                <span>${formatPrice(order.total)}</span>
+                <span>${formatPrice(order.total || 0)}</span>
             </div>
-            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
-                <p><strong>Khách hàng:</strong> ${order.name}</p>
-                <p><strong>SĐT:</strong> ${order.phone}</p>
-                <p><strong>Địa chỉ:</strong> ${order.address}</p>
-                ${order.note ? `<p><strong>Ghi chú:</strong> ${order.note}</p>` : ''}
+            <div class="order-actions" style="margin-top: 15px; display: flex; gap: 10px;">
+                <button class="btn btn-secondary btn-small" onclick="printOrder('${orderId}')">
+                    <i class="fas fa-print"></i> In Hóa Đơn
+                </button>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // Settings
@@ -1687,17 +1691,28 @@ function importData() {
 
 // Print Order
 function printOrder(orderId) {
-    const order = orders.find(o => o.id === orderId);
+    if (!orderId) {
+        showToast('Không tìm thấy đơn hàng!', 'error');
+        return;
+    }
+    
+    const order = orders.find(o => o.id === orderId || String(o.id) === String(orderId));
     if (!order) {
         showToast('Không tìm thấy đơn hàng!', 'error');
         return;
     }
     
+    const items = order.items || [];
     const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        showToast('Không thể mở cửa sổ in! Vui lòng cho phép popup.', 'error');
+        return;
+    }
+    
     printWindow.document.write(`
         <html>
             <head>
-                <title>Hóa Đơn #${order.id}</title>
+                <title>Hóa Đơn #${order.id || 'N/A'}</title>
                 <style>
                     body { font-family: Arial, sans-serif; padding: 20px; }
                     .header { text-align: center; margin-bottom: 30px; }
@@ -1714,11 +1729,11 @@ function printOrder(orderId) {
                     <h2>HÓA ĐƠN BÁN HÀNG</h2>
                 </div>
                 <div class="order-info">
-                    <p><strong>Mã đơn:</strong> #${order.id}</p>
-                    <p><strong>Ngày đặt:</strong> ${order.date}</p>
-                    <p><strong>Khách hàng:</strong> ${order.name}</p>
-                    <p><strong>SĐT:</strong> ${order.phone}</p>
-                    <p><strong>Địa chỉ:</strong> ${order.address}</p>
+                    <p><strong>Mã đơn:</strong> #${order.id || 'N/A'}</p>
+                    <p><strong>Ngày đặt:</strong> ${order.date || 'N/A'}</p>
+                    <p><strong>Khách hàng:</strong> ${escapeHtml(order.name || 'N/A')}</p>
+                    <p><strong>SĐT:</strong> ${escapeHtml(order.phone || 'N/A')}</p>
+                    <p><strong>Địa chỉ:</strong> ${escapeHtml(order.address || 'N/A')}</p>
                 </div>
                 <table>
                     <thead>
@@ -1730,21 +1745,21 @@ function printOrder(orderId) {
                         </tr>
                     </thead>
                     <tbody>
-                        ${order.items.map(item => `
+                        ${items.map(item => `
                             <tr>
-                                <td>${item.name}</td>
-                                <td>${item.quantity}</td>
-                                <td>${formatPrice(item.price)}</td>
-                                <td>${formatPrice(item.total)}</td>
+                                <td>${escapeHtml(item.name || 'Sản phẩm')}</td>
+                                <td>${item.quantity || 1}</td>
+                                <td>${formatPrice(item.price || 0)}</td>
+                                <td>${formatPrice(item.total || 0)}</td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>
                 <div class="total">
-                    <p>Tạm tính: ${formatPrice(order.subtotal)}</p>
-                    <p>Phí vận chuyển: ${formatPrice(order.shippingFee)}</p>
-                    ${order.discount > 0 ? `<p>Giảm giá: -${formatPrice(order.discount)}</p>` : ''}
-                    <p>Tổng cộng: ${formatPrice(order.total)}</p>
+                    <p>Tạm tính: ${formatPrice(order.subtotal || 0)}</p>
+                    <p>Phí vận chuyển: ${formatPrice(order.shippingFee || 0)}</p>
+                    ${(order.discount || 0) > 0 ? `<p>Giảm giá: -${formatPrice(order.discount)}</p>` : ''}
+                    <p>Tổng cộng: ${formatPrice(order.total || 0)}</p>
                 </div>
             </body>
         </html>
