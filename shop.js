@@ -1682,3 +1682,6 @@ function setupGlobalFunctions() {
     window.printOrder = printOrder;
 }
 
+// Setup global functions after all functions are defined
+setupGlobalFunctions();
+
