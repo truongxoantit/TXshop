@@ -274,11 +274,14 @@ function initializeApp() {
         localStorage.setItem('products', JSON.stringify(productsData));
     }
     
+    // Make functions global early
+    makeFunctionsGlobal();
+    
     initFilteredProducts();
     loadSettings();
     checkAdminStatus();
     setupNavigation();
-    updateRenderProducts();
+    renderProducts();
     updateCartBadge();
     updateFavoritesBadge();
     setupEventListeners();
@@ -700,8 +703,36 @@ function renderProducts() {
         return;
     }
     
-    // Use the updated render function
-    updateRenderProducts();
+    // Render products with all features
+    productsGrid.innerHTML = filteredProducts.map(product => `
+        <div class="product-card">
+            <div class="product-image-wrapper">
+                <img src="${product.image}" alt="${product.name}" class="product-image" 
+                     loading="lazy"
+                     onclick="showProductDetail(${product.id})"
+                     style="cursor: pointer;"
+                     onerror="this.onerror=null; this.src='https://via.placeholder.com/300x200/e0e0e0/999999?text=No+Image'">
+                <button class="favorite-btn ${isFavorite(product.id) ? 'active' : ''}" 
+                        onclick="toggleFavorite(${product.id})" 
+                        title="${isFavorite(product.id) ? 'Xóa khỏi yêu thích' : 'Thêm vào yêu thích'}">
+                    <i class="fas fa-heart"></i>
+                </button>
+            </div>
+            <div class="product-info">
+                <div class="product-name" onclick="showProductDetail(${product.id})" style="cursor: pointer;">${escapeHtml(product.name)}</div>
+                <div class="product-category">${escapeHtml(product.category)}</div>
+                <div class="product-price">${formatPrice(product.price)}</div>
+                <div class="product-actions">
+                    <button class="btn btn-primary" onclick="addToCart(${product.id})">
+                        <i class="fas fa-cart-plus"></i> Thêm vào giỏ
+                    </button>
+                    <button class="btn btn-secondary btn-small" onclick="showProductDetail(${product.id})">
+                        <i class="fas fa-eye"></i> Chi tiết
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
 }
 
 // Escape HTML to prevent XSS
@@ -786,8 +817,15 @@ function handleSort() {
 
 // Cart Functions
 function addToCart(productId) {
+    if (!productId) {
+        showToast('Lỗi: Không tìm thấy sản phẩm!', 'error');
+        return;
+    }
     const product = productsData.find(p => p.id === productId);
-    if (!product) return;
+    if (!product) {
+        showToast('Lỗi: Sản phẩm không tồn tại!', 'error');
+        return;
+    }
     
     const existingItem = cart.find(item => item.id === productId);
     
@@ -1290,6 +1328,7 @@ function showLoading(show) {
 let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
 
 function toggleFavorite(productId) {
+    if (!productId) return;
     const index = favorites.indexOf(productId);
     if (index > -1) {
         favorites.splice(index, 1);
@@ -1301,7 +1340,9 @@ function toggleFavorite(productId) {
     localStorage.setItem('favorites', JSON.stringify(favorites));
     updateFavoritesBadge();
     renderProducts();
-    renderFavorites();
+    if (document.getElementById('favoritesGrid')) {
+        renderFavorites();
+    }
 }
 
 function isFavorite(productId) {
@@ -1356,14 +1397,24 @@ function renderFavorites() {
 
 // Product Detail Modal
 function showProductDetail(productId) {
+    if (!productId) {
+        showToast('Lỗi: Không tìm thấy sản phẩm!', 'error');
+        return;
+    }
     const product = productsData.find(p => p.id === productId);
-    if (!product) return;
+    if (!product) {
+        showToast('Lỗi: Sản phẩm không tồn tại!', 'error');
+        return;
+    }
     
     const modal = document.getElementById('productDetailModal');
     const nameEl = document.getElementById('productDetailName');
     const contentEl = document.getElementById('productDetailContent');
     
-    if (!modal || !nameEl || !contentEl) return;
+    if (!modal || !nameEl || !contentEl) {
+        console.error('Modal elements not found');
+        return;
+    }
     
     nameEl.textContent = product.name;
     contentEl.innerHTML = `
@@ -1423,9 +1474,18 @@ function setupAdvancedFilter() {
 }
 
 function applyAdvancedFilter() {
-    const minPrice = parseInt(document.getElementById('minPrice').value) || 0;
-    const maxPrice = parseInt(document.getElementById('maxPrice').value) || Infinity;
-    const sortValue = document.getElementById('advancedSort').value;
+    const minPriceEl = document.getElementById('minPrice');
+    const maxPriceEl = document.getElementById('maxPrice');
+    const sortEl = document.getElementById('advancedSort');
+    
+    if (!minPriceEl || !maxPriceEl || !sortEl) {
+        showToast('Lỗi: Không tìm thấy các trường lọc!', 'error');
+        return;
+    }
+    
+    const minPrice = parseInt(minPriceEl.value) || 0;
+    const maxPrice = parseInt(maxPriceEl.value) || Infinity;
+    const sortValue = sortEl.value;
     
     filteredProducts = productsData.filter(product => {
         return product.price >= minPrice && product.price <= maxPrice;
@@ -1599,65 +1659,26 @@ function printOrder(orderId) {
     printWindow.print();
 }
 
-// Update renderProducts to include favorite button and detail
-function updateRenderProducts() {
-    const productsGrid = document.getElementById('productsGrid');
-    if (!productsGrid) return;
-    
-    if (filteredProducts.length === 0) {
-        productsGrid.innerHTML = `
-            <div class="empty-state" style="grid-column: 1/-1;">
-                <i class="fas fa-search"></i>
-                <h3>Không tìm thấy sản phẩm</h3>
-                <p>Thử tìm kiếm với từ khóa khác</p>
-            </div>
-        `;
-        return;
-    }
-    
-    productsGrid.innerHTML = filteredProducts.map(product => `
-        <div class="product-card">
-            <div class="product-image-wrapper">
-                <img src="${product.image}" alt="${product.name}" class="product-image" 
-                     loading="lazy"
-                     onclick="showProductDetail(${product.id})"
-                     style="cursor: pointer;"
-                     onerror="this.onerror=null; this.src='https://via.placeholder.com/300x200/e0e0e0/999999?text=No+Image'">
-                <button class="favorite-btn ${isFavorite(product.id) ? 'active' : ''}" 
-                        onclick="toggleFavorite(${product.id})" 
-                        title="${isFavorite(product.id) ? 'Xóa khỏi yêu thích' : 'Thêm vào yêu thích'}">
-                    <i class="fas fa-heart"></i>
-                </button>
-            </div>
-            <div class="product-info">
-                <div class="product-name" onclick="showProductDetail(${product.id})" style="cursor: pointer;">${escapeHtml(product.name)}</div>
-                <div class="product-category">${escapeHtml(product.category)}</div>
-                <div class="product-price">${formatPrice(product.price)}</div>
-                <div class="product-actions">
-                    <button class="btn btn-primary" onclick="addToCart(${product.id})">
-                        <i class="fas fa-cart-plus"></i> Thêm vào giỏ
-                    </button>
-                    <button class="btn btn-secondary btn-small" onclick="showProductDetail(${product.id})">
-                        <i class="fas fa-eye"></i> Chi tiết
-                    </button>
-                </div>
-            </div>
-        </div>
-    `).join('');
+// Make functions global for onclick handlers - Call this early
+function makeFunctionsGlobal() {
+    // These will be defined later, but we set them up here
+    // The actual assignments happen after functions are defined
 }
 
-// Make functions global for onclick handlers
-window.addToCart = addToCart;
-window.removeFromCart = removeFromCart;
-window.updateQuantity = updateQuantity;
-window.setQuantity = setQuantity;
-window.editProduct = editProduct;
-window.deleteProduct = deleteProduct;
-window.updateOrderStatus = updateOrderStatus;
-window.toggleFavorite = toggleFavorite;
-window.showProductDetail = showProductDetail;
-window.closeProductDetail = closeProductDetail;
-window.exportData = exportData;
-window.importData = importData;
-window.printOrder = printOrder;
+// Make functions global for onclick handlers - Called at end of file
+function setupGlobalFunctions() {
+    window.addToCart = addToCart;
+    window.removeFromCart = removeFromCart;
+    window.updateQuantity = updateQuantity;
+    window.setQuantity = setQuantity;
+    window.editProduct = editProduct;
+    window.deleteProduct = deleteProduct;
+    window.updateOrderStatus = updateOrderStatus;
+    window.toggleFavorite = toggleFavorite;
+    window.showProductDetail = showProductDetail;
+    window.closeProductDetail = closeProductDetail;
+    window.exportData = exportData;
+    window.importData = importData;
+    window.printOrder = printOrder;
+}
 
