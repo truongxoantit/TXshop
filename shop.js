@@ -572,11 +572,30 @@ function updateOrderStatus(orderId, newStatus) {
 }
 
 function updateStats() {
-    document.getElementById('totalProducts').textContent = productsData.length;
-    document.getElementById('totalOrders').textContent = orders.length;
-    document.getElementById('pendingOrders').textContent = orders.filter(o => o.status === 'pending').length;
-    const revenue = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.total, 0);
-    document.getElementById('totalRevenue').textContent = formatPrice(revenue);
+    const totalProductsEl = document.getElementById('totalProducts');
+    const totalOrdersEl = document.getElementById('totalOrders');
+    const pendingOrdersEl = document.getElementById('pendingOrders');
+    const totalRevenueEl = document.getElementById('totalRevenue');
+    
+    if (totalProductsEl) {
+        totalProductsEl.textContent = (productsData && productsData.length) ? productsData.length : 0;
+    }
+    
+    if (totalOrdersEl) {
+        totalOrdersEl.textContent = (orders && orders.length) ? orders.length : 0;
+    }
+    
+    if (pendingOrdersEl) {
+        const pending = (orders && orders.length) ? orders.filter(o => o.status === 'pending').length : 0;
+        pendingOrdersEl.textContent = pending;
+    }
+    
+    if (totalRevenueEl) {
+        const revenue = (orders && orders.length) 
+            ? orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + (o.total || 0), 0)
+            : 0;
+        totalRevenueEl.textContent = formatPrice(revenue);
+    }
 }
 
 // Payment Method Change
