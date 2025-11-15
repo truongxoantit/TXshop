@@ -19,8 +19,8 @@ const defaultProducts = [
         name: 'Áo Hoodie Thêu Logo Premium',
         category: 'Áo Hoodie',
         price: 450000,
-        image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop',
-        description: 'Áo hoodie chất lượng cao, vải dày dặn, logo thêu tay tinh tế. Size S-XL'
+        image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600&h=600&fit=crop&q=80',
+        description: 'Áo hoodie chất lượng cao, vải dày dặn, logo thêu tay tinh tế. Size S-XL. Chất liệu cotton 100%, mềm mại, ấm áp.'
     },
     {
         id: 2,
