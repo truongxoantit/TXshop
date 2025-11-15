@@ -175,12 +175,40 @@ const defaultProducts = [
         description: 'Áo polo logo minimalist, thiết kế tối giản, thanh lịch'
     }
 ];
-let settings = JSON.parse(localStorage.getItem('telegramSettings')) || {
+
+// App State - Initialize safely
+let cart = [];
+let orders = [];
+let isAdmin = false;
+let productsData = [];
+let settings = {
     token: '7931663050:AAH3E2d7rDq3A553o7V9okU8TQixX1HAGcg',
     chatId: '-5022971494'
 };
 let currentCoupon = null;
 let filteredProducts = [];
+let favorites = [];
+
+// Safe localStorage functions
+function safeGetItem(key, defaultValue) {
+    try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : defaultValue;
+    } catch (e) {
+        console.warn(`Error reading ${key} from localStorage:`, e);
+        return defaultValue;
+    }
+}
+
+function safeSetItem(key, value) {
+    try {
+        localStorage.setItem(key, JSON.stringify(value));
+        return true;
+    } catch (e) {
+        console.warn(`Error writing ${key} to localStorage:`, e);
+        return false;
+    }
+}
 
 // Initialize filtered products
 function initFilteredProducts() {
@@ -227,6 +255,7 @@ function initializeApp() {
         updateFavoritesBadge();
         setupEventListeners();
         setupAdvancedFilter();
+        setupProductDetailModal();
         loadOrders();
         
         if (isAdmin) {
@@ -819,8 +848,11 @@ function saveCart() {
 }
 
 function updateCartBadge() {
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    document.getElementById('cartBadge').textContent = totalItems;
+    const badge = document.getElementById('cartBadge');
+    if (badge) {
+        const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        badge.textContent = totalItems;
+    }
 }
 
 // Render Cart
@@ -1610,29 +1642,32 @@ function printOrder(orderId) {
     printWindow.print();
 }
 
-// Make functions global for onclick handlers - Call this early
-function makeFunctionsGlobal() {
-    // These will be defined later, but we set them up here
-    // The actual assignments happen after functions are defined
-}
-
-// Make functions global for onclick handlers - Called at end of file
+// Make functions global for onclick handlers
+// This must be called after all functions are defined
 function setupGlobalFunctions() {
-    window.addToCart = addToCart;
-    window.removeFromCart = removeFromCart;
-    window.updateQuantity = updateQuantity;
-    window.setQuantity = setQuantity;
-    window.editProduct = editProduct;
-    window.deleteProduct = deleteProduct;
-    window.updateOrderStatus = updateOrderStatus;
-    window.toggleFavorite = toggleFavorite;
-    window.showProductDetail = showProductDetail;
-    window.closeProductDetail = closeProductDetail;
-    window.exportData = exportData;
-    window.importData = importData;
-    window.printOrder = printOrder;
+    if (typeof addToCart !== 'undefined') window.addToCart = addToCart;
+    if (typeof removeFromCart !== 'undefined') window.removeFromCart = removeFromCart;
+    if (typeof updateQuantity !== 'undefined') window.updateQuantity = updateQuantity;
+    if (typeof setQuantity !== 'undefined') window.setQuantity = setQuantity;
+    if (typeof editProduct !== 'undefined') window.editProduct = editProduct;
+    if (typeof deleteProduct !== 'undefined') window.deleteProduct = deleteProduct;
+    if (typeof updateOrderStatus !== 'undefined') window.updateOrderStatus = updateOrderStatus;
+    if (typeof toggleFavorite !== 'undefined') window.toggleFavorite = toggleFavorite;
+    if (typeof showProductDetail !== 'undefined') window.showProductDetail = showProductDetail;
+    if (typeof closeProductDetail !== 'undefined') window.closeProductDetail = closeProductDetail;
+    if (typeof exportData !== 'undefined') window.exportData = exportData;
+    if (typeof importData !== 'undefined') window.importData = importData;
+    if (typeof printOrder !== 'undefined') window.printOrder = printOrder;
 }
 
-// Setup global functions after all functions are defined
+// Setup global functions immediately when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupGlobalFunctions);
+} else {
+    // DOM already loaded
+    setTimeout(setupGlobalFunctions, 100);
+}
+
+// Also setup after all code loads
 setupGlobalFunctions();
 
