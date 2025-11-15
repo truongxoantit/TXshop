@@ -246,6 +246,9 @@ function initializeApp() {
             safeSetItem('telegramSettings', settings);
         }
         
+        // Setup global functions first
+        setupGlobalFunctions();
+        
         // Initialize
         initFilteredProducts();
         checkAdminStatus();
@@ -262,6 +265,11 @@ function initializeApp() {
             setupAdminEventListeners();
             loadAdminData();
         }
+        
+        // Setup global functions again to ensure they're available
+        setTimeout(() => {
+            setupGlobalFunctions();
+        }, 200);
         
         console.log('TXshop initialized successfully');
     } catch (error) {
@@ -1748,19 +1756,26 @@ function printOrder(orderId) {
 // Make functions global for onclick handlers
 // This must be called after all functions are defined
 function setupGlobalFunctions() {
-    if (typeof addToCart !== 'undefined') window.addToCart = addToCart;
-    if (typeof removeFromCart !== 'undefined') window.removeFromCart = removeFromCart;
-    if (typeof updateQuantity !== 'undefined') window.updateQuantity = updateQuantity;
-    if (typeof setQuantity !== 'undefined') window.setQuantity = setQuantity;
-    if (typeof editProduct !== 'undefined') window.editProduct = editProduct;
-    if (typeof deleteProduct !== 'undefined') window.deleteProduct = deleteProduct;
-    if (typeof updateOrderStatus !== 'undefined') window.updateOrderStatus = updateOrderStatus;
-    if (typeof toggleFavorite !== 'undefined') window.toggleFavorite = toggleFavorite;
-    if (typeof showProductDetail !== 'undefined') window.showProductDetail = showProductDetail;
-    if (typeof closeProductDetail !== 'undefined') window.closeProductDetail = closeProductDetail;
-    if (typeof exportData !== 'undefined') window.exportData = exportData;
-    if (typeof importData !== 'undefined') window.importData = importData;
-    if (typeof printOrder !== 'undefined') window.printOrder = printOrder;
+    try {
+        // Make all necessary functions global
+        if (typeof addToCart !== 'undefined') window.addToCart = addToCart;
+        if (typeof removeFromCart !== 'undefined') window.removeFromCart = removeFromCart;
+        if (typeof updateQuantity !== 'undefined') window.updateQuantity = updateQuantity;
+        if (typeof setQuantity !== 'undefined') window.setQuantity = setQuantity;
+        if (typeof editProduct !== 'undefined') window.editProduct = editProduct;
+        if (typeof deleteProduct !== 'undefined') window.deleteProduct = deleteProduct;
+        if (typeof updateOrderStatus !== 'undefined') window.updateOrderStatus = updateOrderStatus;
+        if (typeof toggleFavorite !== 'undefined') window.toggleFavorite = toggleFavorite;
+        if (typeof showProductDetail !== 'undefined') window.showProductDetail = showProductDetail;
+        if (typeof closeProductDetail !== 'undefined') window.closeProductDetail = closeProductDetail;
+        if (typeof exportData !== 'undefined') window.exportData = exportData;
+        if (typeof importData !== 'undefined') window.importData = importData;
+        if (typeof printOrder !== 'undefined') window.printOrder = printOrder;
+        
+        console.log('Global functions setup completed');
+    } catch (error) {
+        console.error('Error setting up global functions:', error);
+    }
 }
 
 // Setup global functions immediately when DOM is ready
