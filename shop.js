@@ -567,12 +567,17 @@ function loadAdminData() {
 
 function renderAdminOrders() {
     const adminOrdersList = document.getElementById('adminOrdersList');
-    if (!adminOrdersList) return;
+    if (!adminOrdersList) {
+        console.warn('Admin orders list element not found');
+        return;
+    }
     
-    if (!orders || orders.length === 0) {
+    if (!orders || !Array.isArray(orders) || orders.length === 0) {
         adminOrdersList.innerHTML = '<div class="empty-state"><i class="fas fa-list-alt"></i><h3>Chưa có đơn hàng nào</h3></div>';
         return;
     }
+    
+    console.log('Rendering admin orders:', orders.length);
     
     adminOrdersList.innerHTML = [...orders].reverse().map(order => {
         const items = order.items || [];
