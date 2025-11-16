@@ -54,11 +54,11 @@
                     <button class="nav-btn admin-only" data-page="admin" id="adminNavBtn" style="display: none;">
                         <i class="fas fa-user-shield"></i> <span class="nav-text">Quản Trị</span>
                     </button>
-                    <button class="nav-btn" id="registerBtn" style="display: none;">
-                        <i class="fas fa-user-plus"></i> <span class="nav-text">Đăng Ký</span>
-                    </button>
                     <button class="nav-btn" id="loginBtn">
                         <i class="fas fa-sign-in-alt"></i> <span class="nav-text">Đăng Nhập</span>
+                    </button>
+                    <button class="nav-btn" id="adminLoginBtn" style="display: none;" onclick="handleAdminLogin(); return false;">
+                        <i class="fas fa-user-shield"></i> <span class="nav-text">Admin</span>
                     </button>
                     <button class="nav-btn" id="userLogoutBtn" style="display: none;">
                         <i class="fas fa-sign-out-alt"></i> <span class="nav-text">Đăng Xuất</span>
@@ -340,11 +340,6 @@
                             <p style="text-align: center; margin-top: 15px;">
                                 Chưa có tài khoản? <a href="#" onclick="showPage('register'); return false;" style="color: #667eea;">Đăng ký ngay</a>
                             </p>
-                            <div style="border-top: 1px solid #e0e0e0; margin-top: 20px; padding-top: 20px;">
-                                <button type="button" class="btn btn-secondary" onclick="showPage('admin-login'); return false;">
-                                    <i class="fas fa-user-shield"></i> Đăng Nhập Admin
-                                </button>
-                            </div>
                         </form>
                     </div>
                 </div>

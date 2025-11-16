@@ -28,7 +28,7 @@ function initUsers() {
 // Admin Credentials (in production, use secure authentication)
 const ADMIN_CREDENTIALS = {
     username: 'admin',
-    password: 'admin123' // Change this in production!
+    password: '123qweqwerr'
 };
 
 // Default Products Data
@@ -309,16 +309,20 @@ function checkAdminStatus() {
     const logoutBtn = document.getElementById('logoutBtn');
     const adminNavBtn = document.getElementById('adminNavBtn');
     
+    const adminLoginBtn = document.getElementById('adminLoginBtn');
+    
     if (isAdmin) {
         adminElements.forEach(el => el.style.display = 'flex');
         if (loginBtn) loginBtn.style.display = 'none';
         if (logoutBtn) logoutBtn.style.display = 'flex';
         if (adminNavBtn) adminNavBtn.style.display = 'flex';
+        if (adminLoginBtn) adminLoginBtn.style.display = 'none';
     } else {
         adminElements.forEach(el => el.style.display = 'none');
         if (loginBtn) loginBtn.style.display = 'flex';
         if (logoutBtn) logoutBtn.style.display = 'none';
         if (adminNavBtn) adminNavBtn.style.display = 'none';
+        if (adminLoginBtn) adminLoginBtn.style.display = 'flex';
     }
 }
 
@@ -405,33 +409,32 @@ function handleUserLogout() {
 
 // Check User Status
 function checkUserStatus() {
-    const registerBtn = document.getElementById('registerBtn');
     const loginBtn = document.getElementById('loginBtn');
     const userLogoutBtn = document.getElementById('userLogoutBtn');
     
     if (currentUser) {
-        if (registerBtn) registerBtn.style.display = 'none';
         if (loginBtn) loginBtn.style.display = 'none';
         if (userLogoutBtn) userLogoutBtn.style.display = 'flex';
     } else {
-        if (registerBtn) registerBtn.style.display = 'flex';
         if (loginBtn) loginBtn.style.display = 'flex';
         if (userLogoutBtn) userLogoutBtn.style.display = 'none';
     }
 }
 
-// Admin Login
-function handleLogin(e) {
-    e.preventDefault();
-    const username = document.getElementById('adminUsername').value;
-    const password = document.getElementById('adminPassword').value;
+// Admin Login - Using prompt instead of form
+function handleAdminLogin() {
+    const username = prompt('Nhập tên đăng nhập admin:');
+    if (!username) return;
+    
+    const password = prompt('Nhập mật khẩu admin:');
+    if (!password) return;
     
     if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
         isAdmin = true;
         localStorage.setItem('isAdmin', 'true');
         checkAdminStatus();
         showPage('admin');
-        showToast('Đăng nhập thành công!', 'success');
+        showToast('Đăng nhập admin thành công!', 'success');
         
         // Setup admin event listeners after login
         setupAdminEventListeners();
@@ -447,6 +450,12 @@ function handleLogin(e) {
     } else {
         showToast('Sai tên đăng nhập hoặc mật khẩu!', 'error');
     }
+}
+
+// Keep old handleLogin for backward compatibility (if form still exists)
+function handleLogin(e) {
+    if (e) e.preventDefault();
+    handleAdminLogin();
 }
 
 function handleLogout() {
@@ -1513,7 +1522,18 @@ function loadOrders() {
         return;
     }
     
-    ordersList.innerHTML = [...orders].reverse().map(order => {
+    // Filter orders: if user is logged in, show only their orders; if admin, show all
+    let filteredOrders = orders;
+    if (!isAdmin && currentUser) {
+        filteredOrders = orders.filter(order => order.userPhone === currentUser.phone);
+    }
+    
+    if (!filteredOrders || filteredOrders.length === 0) {
+        ordersList.innerHTML = '<div class="empty-state"><i class="fas fa-list-alt"></i><h3>Chưa có đơn hàng nào</h3></div>';
+        return;
+    }
+    
+    ordersList.innerHTML = [...filteredOrders].reverse().map(order => {
         const items = order.items || [];
         const status = order.status || 'pending';
         const orderId = order.id || 'N/A';
@@ -2348,6 +2368,7 @@ function setupGlobalFunctions() {
         if (typeof clearAllOrders !== 'undefined') window.clearAllOrders = clearAllOrders;
         if (typeof exportAllData !== 'undefined') window.exportAllData = exportAllData;
         if (typeof backupData !== 'undefined') window.backupData = backupData;
+        if (typeof handleAdminLogin !== 'undefined') window.handleAdminLogin = handleAdminLogin;
         
         console.log('Global functions setup completed');
     } catch (error) {
@@ -2365,4 +2386,96 @@ if (document.readyState === 'loading') {
 
 // Also setup after all code loads
 setupGlobalFunctions();
+
+// Admin Utility Functions
+function resetRevenue() {
+    if (!isAdmin) {
+        showToast('Bạn không có quyền thực hiện thao tác này!', 'error');
+        return;
+    }
+    
+    if (!confirm('Bạn có chắc muốn reset doanh thu? Hành động này không thể hoàn tác!')) {
+        return;
+    }
+    
+    // Reset revenue by marking all completed orders as pending
+    orders.forEach(order => {
+        if (order.status === 'completed') {
+            order.status = 'pending';
+        }
+    });
+    
+    safeSetItem('orders', orders);
+    updateStats();
+    renderAdminOrders();
+    showToast('Đã reset doanh thu!', 'success');
+}
+
+function clearAllOrders() {
+    if (!isAdmin) {
+        showToast('Bạn không có quyền thực hiện thao tác này!', 'error');
+        return;
+    }
+    
+    if (!confirm('Bạn có chắc muốn xóa TẤT CẢ đơn hàng? Hành động này không thể hoàn tác!')) {
+        return;
+    }
+    
+    orders = [];
+    safeSetItem('orders', orders);
+    loadOrders();
+    renderAdminOrders();
+    updateStats();
+    showToast('Đã xóa tất cả đơn hàng!', 'success');
+}
+
+function exportAllData() {
+    if (!isAdmin) {
+        showToast('Bạn không có quyền thực hiện thao tác này!', 'error');
+        return;
+    }
+    
+    const data = {
+        products: productsData,
+        orders: orders,
+        settings: settings,
+        coupons: coupons,
+        users: users,
+        exportDate: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `txshop-all-data-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Đã xuất tất cả dữ liệu thành công!', 'success');
+}
+
+function backupData() {
+    if (!isAdmin) {
+        showToast('Bạn không có quyền thực hiện thao tác này!', 'error');
+        return;
+    }
+    
+    const data = {
+        products: productsData,
+        orders: orders,
+        settings: settings,
+        coupons: coupons,
+        users: users,
+        backupDate: new Date().toISOString()
+    };
+    
+    const backupKey = `backup_${Date.now()}`;
+    try {
+        localStorage.setItem(backupKey, JSON.stringify(data));
+        showToast('Đã tạo backup dữ liệu thành công!', 'success');
+    } catch (e) {
+        showToast('Lỗi: Không thể tạo backup (localStorage đầy?)', 'error');
+        console.error('Backup error:', e);
+    }
+}
 
