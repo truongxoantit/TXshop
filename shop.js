@@ -1,10 +1,29 @@
-// Coupon Codes
-const coupons = {
-    'WELCOME10': { discount: 10, type: 'percent' },
-    'SAVE50K': { discount: 50000, type: 'fixed' },
-    'VIP20': { discount: 20, type: 'percent' },
-    'NEW2024': { discount: 15, type: 'percent' }
-};
+// Coupon Codes - Load from localStorage or use default
+let coupons = {};
+let users = [];
+let currentUser = null;
+
+// Initialize coupons
+function initCoupons() {
+    const savedCoupons = safeGetItem('coupons', null);
+    if (savedCoupons && Object.keys(savedCoupons).length > 0) {
+        coupons = savedCoupons;
+    } else {
+        coupons = {
+            'WELCOME10': { discount: 10, type: 'percent' },
+            'SAVE50K': { discount: 50000, type: 'fixed' },
+            'VIP20': { discount: 20, type: 'percent' },
+            'NEW2024': { discount: 15, type: 'percent' }
+        };
+        safeSetItem('coupons', coupons);
+    }
+}
+
+// Initialize users
+function initUsers() {
+    users = safeGetItem('users', []);
+    currentUser = safeGetItem('currentUser', null);
+}
 
 // Admin Credentials (in production, use secure authentication)
 const ADMIN_CREDENTIALS = {
@@ -222,6 +241,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function initializeApp() {
     try {
+        // Initialize coupons and users first
+        initCoupons();
+        initUsers();
+        
         // Load data safely
         cart = safeGetItem('cart', []);
         orders = safeGetItem('orders', []);
@@ -298,6 +321,105 @@ function checkAdminStatus() {
     }
 }
 
+// User Registration
+function handleRegister(e) {
+    e.preventDefault();
+    const name = document.getElementById('registerName').value.trim();
+    const phone = document.getElementById('registerPhone').value.trim();
+    const email = document.getElementById('registerEmail').value.trim();
+    const password = document.getElementById('registerPassword').value;
+    const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+    
+    if (!name || !phone || !password) {
+        showToast('Vui lòng điền đầy đủ thông tin bắt buộc!', 'error');
+        return;
+    }
+    
+    if (password.length < 6) {
+        showToast('Mật khẩu phải có ít nhất 6 ký tự!', 'error');
+        return;
+    }
+    
+    if (password !== passwordConfirm) {
+        showToast('Mật khẩu xác nhận không khớp!', 'error');
+        return;
+    }
+    
+    // Check if user already exists
+    if (users.find(u => u.phone === phone)) {
+        showToast('Số điện thoại đã được đăng ký!', 'error');
+        return;
+    }
+    
+    // Create new user
+    const newUser = {
+        id: Date.now().toString(),
+        name: name,
+        phone: phone,
+        email: email || '',
+        password: password, // In production, hash this!
+        createdAt: new Date().toISOString()
+    };
+    
+    users.push(newUser);
+    safeSetItem('users', users);
+    
+    showToast('Đăng ký thành công! Vui lòng đăng nhập.', 'success');
+    document.getElementById('registerForm').reset();
+    setTimeout(() => {
+        showPage('login');
+    }, 1000);
+}
+
+// User Login
+function handleUserLogin(e) {
+    e.preventDefault();
+    const phone = document.getElementById('userPhone').value.trim();
+    const password = document.getElementById('userPassword').value;
+    
+    const user = users.find(u => u.phone === phone && u.password === password);
+    
+    if (user) {
+        currentUser = user;
+        safeSetItem('currentUser', currentUser);
+        checkUserStatus();
+        showPage('home');
+        showToast('Đăng nhập thành công!', 'success');
+        document.getElementById('userLoginForm').reset();
+    } else {
+        showToast('Số điện thoại hoặc mật khẩu không đúng!', 'error');
+    }
+}
+
+// User Logout
+function handleUserLogout() {
+    if (confirm('Bạn có chắc muốn đăng xuất?')) {
+        currentUser = null;
+        safeSetItem('currentUser', null);
+        checkUserStatus();
+        showPage('home');
+        showToast('Đã đăng xuất', 'success');
+    }
+}
+
+// Check User Status
+function checkUserStatus() {
+    const registerBtn = document.getElementById('registerBtn');
+    const loginBtn = document.getElementById('loginBtn');
+    const userLogoutBtn = document.getElementById('userLogoutBtn');
+    
+    if (currentUser) {
+        if (registerBtn) registerBtn.style.display = 'none';
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (userLogoutBtn) userLogoutBtn.style.display = 'flex';
+    } else {
+        if (registerBtn) registerBtn.style.display = 'flex';
+        if (loginBtn) loginBtn.style.display = 'flex';
+        if (userLogoutBtn) userLogoutBtn.style.display = 'none';
+    }
+}
+
+// Admin Login
 function handleLogin(e) {
     e.preventDefault();
     const username = document.getElementById('adminUsername').value;
@@ -1610,7 +1732,24 @@ function showProductDetail(productId) {
 
 function closeProductDetail() {
     const modal = document.getElementById('productDetailModal');
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Contact Shop Modal
+function openContactModal() {
+    const modal = document.getElementById('contactShopModal');
+    if (modal) {
+        modal.classList.add('active');
+    }
+}
+
+function closeContactModal() {
+    const modal = document.getElementById('contactShopModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
 }
 
 // Advanced Filter
@@ -1832,6 +1971,180 @@ function printOrder(orderId) {
     `);
     printWindow.document.close();
     printWindow.print();
+}
+
+// Coupon Management
+function handleAddCoupon(e) {
+    e.preventDefault();
+    const code = document.getElementById('couponCode').value.trim().toUpperCase();
+    const type = document.getElementById('couponType').value;
+    const discount = parseFloat(document.getElementById('couponDiscount').value);
+    
+    if (!code || !type || !discount || discount <= 0) {
+        showToast('Vui lòng điền đầy đủ thông tin!', 'error');
+        return;
+    }
+    
+    if (coupons[code]) {
+        showToast('Mã giảm giá đã tồn tại!', 'error');
+        return;
+    }
+    
+    coupons[code] = { discount: discount, type: type };
+    safeSetItem('coupons', coupons);
+    renderAdminCoupons();
+    document.getElementById('addCouponForm').reset();
+    showToast('Đã tạo mã giảm giá thành công!', 'success');
+}
+
+function renderAdminCoupons() {
+    const adminCouponsList = document.getElementById('adminCouponsList');
+    if (!adminCouponsList) return;
+    
+    const couponCodes = Object.keys(coupons);
+    if (couponCodes.length === 0) {
+        adminCouponsList.innerHTML = '<div class="empty-state"><i class="fas fa-ticket-alt"></i><h3>Chưa có mã giảm giá nào</h3></div>';
+        return;
+    }
+    
+    adminCouponsList.innerHTML = couponCodes.map(code => {
+        const coupon = coupons[code];
+        return `
+        <div class="admin-coupon-card" style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h4 style="margin: 0; color: #667eea;">${code}</h4>
+                    <p style="margin: 5px 0; color: #666;">
+                        ${coupon.type === 'percent' ? `Giảm ${coupon.discount}%` : `Giảm ${formatPrice(coupon.discount)}`}
+                    </p>
+                </div>
+                <button class="btn btn-danger btn-small" onclick="deleteCoupon('${code}')">
+                    <i class="fas fa-trash"></i> Xóa
+                </button>
+            </div>
+        </div>
+    `;
+    }).join('');
+}
+
+function deleteCoupon(code) {
+    if (!confirm(`Bạn có chắc muốn xóa mã giảm giá "${code}"?`)) {
+        return;
+    }
+    
+    delete coupons[code];
+    safeSetItem('coupons', coupons);
+    renderAdminCoupons();
+    showToast('Đã xóa mã giảm giá!', 'success');
+}
+
+function deleteOrder(orderId) {
+    if (!confirm('Bạn có chắc muốn xóa đơn hàng này? Hành động này không thể hoàn tác!')) {
+        return;
+    }
+    
+    const order = orders.find(o => o.id === orderId || String(o.id) === String(orderId));
+    if (!order) {
+        showToast('Không tìm thấy đơn hàng!', 'error');
+        return;
+    }
+    
+    // Only allow deleting completed orders
+    if (order.status !== 'completed') {
+        showToast('Chỉ có thể xóa đơn hàng đã hoàn thành!', 'error');
+        return;
+    }
+    
+    orders = orders.filter(o => o.id !== orderId && String(o.id) !== String(orderId));
+    safeSetItem('orders', orders);
+    renderAdminOrders();
+    loadOrders();
+    updateStats();
+    showToast('Đã xóa đơn hàng!', 'success');
+}
+
+// Generate PDF and send to Telegram
+async function generateAndSendPDF(order) {
+    try {
+        if (typeof window.jspdf === 'undefined') {
+            console.warn('jsPDF not loaded');
+            return;
+        }
+        
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Header
+        doc.setFontSize(20);
+        doc.text('TXshop', 105, 20, { align: 'center' });
+        doc.setFontSize(16);
+        doc.text('HÓA ĐƠN BÁN HÀNG', 105, 30, { align: 'center' });
+        
+        // Order Info
+        doc.setFontSize(12);
+        let y = 45;
+        doc.text(`Mã đơn: #${order.id || 'N/A'}`, 20, y);
+        y += 7;
+        doc.text(`Ngày đặt: ${order.date || 'N/A'}`, 20, y);
+        y += 7;
+        doc.text(`Khách hàng: ${order.name || 'N/A'}`, 20, y);
+        y += 7;
+        doc.text(`SĐT: ${order.phone || 'N/A'}`, 20, y);
+        y += 7;
+        doc.text(`Địa chỉ: ${order.address || 'N/A'}`, 20, y);
+        y += 10;
+        
+        // Items Table
+        doc.setFontSize(10);
+        const items = order.items || [];
+        items.forEach((item, index) => {
+            if (y > 250) {
+                doc.addPage();
+                y = 20;
+            }
+            doc.text(`${item.name || 'Sản phẩm'}`, 20, y);
+            doc.text(`x${item.quantity || 1}`, 100, y);
+            doc.text(formatPrice(item.price || 0), 120, y);
+            doc.text(formatPrice(item.total || 0), 170, y);
+            y += 7;
+        });
+        
+        y += 5;
+        doc.setFontSize(12);
+        doc.text(`Tạm tính: ${formatPrice(order.subtotal || 0)}`, 120, y);
+        y += 7;
+        doc.text(`Phí vận chuyển: ${formatPrice(order.shippingFee || 0)}`, 120, y);
+        if (order.discount > 0) {
+            y += 7;
+            doc.text(`Giảm giá: -${formatPrice(order.discount)}`, 120, y);
+        }
+        y += 7;
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.text(`Tổng cộng: ${formatPrice(order.total || 0)}`, 120, y);
+        
+        // Convert to blob
+        const pdfBlob = doc.output('blob');
+        
+        // Send to Telegram
+        const formData = new FormData();
+        formData.append('chat_id', settings.chatId);
+        formData.append('document', pdfBlob, `invoice_${order.id}.pdf`);
+        formData.append('caption', `📄 Hóa đơn đơn hàng #${order.id}`);
+        
+        const response = await fetch(`https://api.telegram.org/bot${settings.token}/sendDocument`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to send PDF');
+        }
+        
+        console.log('PDF sent to Telegram successfully');
+    } catch (error) {
+        console.error('Error generating/sending PDF:', error);
+    }
 }
 
 // Make functions global for onclick handlers
