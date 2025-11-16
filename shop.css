@@ -1185,6 +1185,7 @@ body {
 
     .form-row {
         flex-direction: column;
+        grid-template-columns: 1fr;
     }
 
     .btn {
@@ -1208,6 +1209,18 @@ body {
 
     .product-detail-grid {
         grid-template-columns: 1fr;
+    }
+
+    .filter-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .export-buttons {
+        flex-direction: column;
+    }
+    
+    .export-buttons .btn {
+        width: 100%;
     }
 }
 
