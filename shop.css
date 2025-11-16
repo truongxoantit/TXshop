@@ -933,11 +933,6 @@ body {
     gap: 20px;
 }
 
-@media (max-width: 768px) {
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-}
 
 .admin-products-list {
     display: grid;
@@ -1045,56 +1040,208 @@ body {
 
 /* Responsive */
 @media (max-width: 768px) {
+    .top-contact-bar {
+        padding: 6px 0;
+        font-size: 0.75rem;
+    }
+
+    .contact-info {
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .contact-item span {
+        display: none;
+    }
+
+    .header {
+        padding: 10px 0;
+    }
+
     .header-content {
-        flex-direction: column;
+        flex-wrap: nowrap;
+    }
+
+    .logo {
+        font-size: 1.1rem;
+    }
+
+    .logo i {
+        font-size: 1.3rem;
+    }
+
+    .mobile-menu-toggle {
+        display: block;
     }
 
     .nav {
+        position: fixed;
+        top: 60px;
+        left: -100%;
         width: 100%;
-        justify-content: center;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        flex-direction: column;
+        padding: 20px;
+        box-shadow: var(--shadow-lg);
+        transition: left 0.3s ease;
+        z-index: 999;
+        max-height: calc(100vh - 60px);
+        overflow-y: auto;
+    }
+
+    .nav.active {
+        left: 0;
     }
 
     .nav-btn {
-        flex: 1;
-        justify-content: center;
-        font-size: 0.85rem;
-        padding: 8px 12px;
+        width: 100%;
+        justify-content: flex-start;
+        padding: 12px 15px;
+        font-size: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-text {
+        display: inline;
     }
 
     .search-filter-bar {
         flex-direction: column;
+        gap: 10px;
     }
 
     .search-box,
     .filter-select {
         width: 100%;
+        min-width: unset;
     }
 
     .products-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+    }
+
+    .product-card {
+        padding: 10px;
+    }
+
+    .product-image {
+        height: 150px;
     }
 
     .cart-item {
         flex-direction: column;
         text-align: center;
+        padding: 15px;
     }
 
     .cart-item-total {
         text-align: center;
+        margin-top: 10px;
     }
 
     .admin-tabs {
-        flex-direction: column;
+        flex-direction: row;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
     }
 
     .admin-tab-btn {
-        width: 100%;
-        text-align: left;
+        min-width: 150px;
+        white-space: nowrap;
+        font-size: 0.85rem;
+        padding: 10px 15px;
     }
 
     .stats-grid {
         grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .stat-card {
+        padding: 15px;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+    }
+
+    .modal-content {
+        width: 95%;
+        max-width: 95%;
+        margin: 10px auto;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .admin-section {
+        padding: 15px;
+    }
+
+    .admin-form {
+        padding: 15px;
+    }
+
+    .form-row {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .btn-small {
+        width: auto;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+
+    .container {
+        padding: 0 15px;
+    }
+
+    .main-content {
+        padding: 20px 0;
+    }
+
+    .product-detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .product-card {
+        padding: 8px;
+    }
+
+    .product-image {
+        height: 120px;
+    }
+
+    .product-name {
+        font-size: 0.9rem;
+    }
+
+    .product-price {
+        font-size: 1rem;
+    }
+
+    .nav-btn {
+        font-size: 0.9rem;
+        padding: 10px 12px;
+    }
+
+    .cart-badge {
+        width: 18px;
+        height: 18px;
+        font-size: 0.7rem;
     }
 }
 
@@ -1253,21 +1400,4 @@ body {
     margin-top: 15px;
 }
 
-@media (max-width: 768px) {
-    .product-detail-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .filter-options {
-        grid-template-columns: 1fr;
-    }
-    
-    .export-buttons {
-        flex-direction: column;
-    }
-    
-    .export-buttons .btn {
-        width: 100%;
-    }
-}
 

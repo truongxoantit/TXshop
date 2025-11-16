@@ -1207,23 +1207,28 @@ function applyCoupon() {
         return;
     }
     
-    const code = couponInput.value.toUpperCase().trim();
-    
+    const code = couponInput.value.trim().toUpperCase();
     if (!code) {
-        showToast('Vui lòng nhập mã giảm giá', 'error');
+        showToast('Vui lòng nhập mã giảm giá!', 'error');
         return;
     }
     
     const coupon = coupons[code];
-    
     if (!coupon) {
-        showToast('Mã giảm giá không hợp lệ', 'error');
+        showToast('Mã giảm giá không hợp lệ!', 'error');
         return;
     }
     
-    currentCoupon = { ...coupon, code };
+    // Check expiry
+    if (coupon.expiryDate && new Date(coupon.expiryDate) < new Date()) {
+        showToast('Mã giảm giá đã hết hạn!', 'error');
+        return;
+    }
+    
+    currentCoupon = { code, ...coupon };
     updateCartSummary();
-    showToast(`Áp dụng mã giảm giá ${code} thành công!`, 'success');
+    couponInput.value = '';
+    showToast(`Đã áp dụng mã giảm giá ${code}!`, 'success');
 }
 
 // Checkout Modal
@@ -2066,7 +2071,7 @@ function editCoupon(code) {
     
     // Scroll to form
     document.getElementById('addCouponForm')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    showToast('Đã tải thông tin mã giảm giá. Chỉnh sửa và nhấn "Tạo Mã Giảm Giá" để cập nhật.', 'info');
+    showToast('Đã tải thông tin mã giảm giá. Chỉnh sửa và nhấn "Lưu Mã Giảm Giá" để cập nhật.', 'info');
 }
 
 function renderAdminCoupons() {
