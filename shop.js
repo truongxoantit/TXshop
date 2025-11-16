@@ -1980,7 +1980,7 @@ function setupExportImportListeners() {
     const exportProductsBtn = document.getElementById('exportProductsBtn');
     const exportOrdersBtn = document.getElementById('exportOrdersBtn');
     const importDataBtn = document.getElementById('importDataBtn');
-    const importFileInput = document.getElementById('importFileInput');
+    const importFileInput = document.getElementById('importFile') || document.getElementById('importFileInput');
     
     if (exportProductsBtn) {
         // Remove existing listener
@@ -1998,13 +1998,19 @@ function setupExportImportListeners() {
     if (importDataBtn && importFileInput) {
         const newBtn = importDataBtn.cloneNode(true);
         importDataBtn.parentNode.replaceChild(newBtn, importDataBtn);
-        document.getElementById('importDataBtn').addEventListener('click', () => {
-            importFileInput.click();
-        });
+        const updatedBtn = document.getElementById('importDataBtn');
+        if (updatedBtn) {
+            updatedBtn.addEventListener('click', () => {
+                importFileInput.click();
+            });
+        }
         
         const newInput = importFileInput.cloneNode(true);
         importFileInput.parentNode.replaceChild(newInput, importFileInput);
-        document.getElementById('importFileInput').addEventListener('change', importData);
+        const updatedInput = document.getElementById('importFile') || document.getElementById('importFileInput');
+        if (updatedInput) {
+            updatedInput.addEventListener('change', importData);
+        }
     }
 }
 
