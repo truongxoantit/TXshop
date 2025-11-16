@@ -1399,6 +1399,7 @@ async function handleCheckout(e) {
             id: Date.now().toString(),
             date: new Date().toLocaleString('vi-VN'),
             status: 'pending',
+            userPhone: currentUser ? currentUser.phone : formData.phone, // Store user phone for filtering
             ...formData
         };
         
