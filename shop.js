@@ -309,7 +309,18 @@ function handleLogin(e) {
         checkAdminStatus();
         showPage('admin');
         showToast('Đăng nhập thành công!', 'success');
+        
+        // Setup admin event listeners after login
+        setupAdminEventListeners();
         loadAdminData();
+        
+        // Reset to first tab
+        setTimeout(() => {
+            const firstTab = document.querySelector('.admin-tab-btn[data-admin-tab="products"]');
+            if (firstTab) {
+                firstTab.click();
+            }
+        }, 100);
     } else {
         showToast('Sai tên đăng nhập hoặc mật khẩu!', 'error');
     }
@@ -349,7 +360,17 @@ function showPage(pageName) {
     } else if (pageName === 'favorites') {
         renderFavorites();
     } else if (pageName === 'admin' && isAdmin) {
+        // Ensure admin event listeners are setup
+        setupAdminEventListeners();
         loadAdminData();
+        
+        // Reset to first tab
+        setTimeout(() => {
+            const firstTab = document.querySelector('.admin-tab-btn[data-admin-tab="products"]');
+            if (firstTab) {
+                firstTab.click();
+            }
+        }, 100);
     }
 }
 
@@ -368,14 +389,27 @@ function setupNavigation() {
 
 // Admin Event Listeners
 function setupAdminEventListeners() {
-    // Admin tabs
+    // Remove existing listeners to avoid duplicates
     const adminTabBtns = document.querySelectorAll('.admin-tab-btn');
     adminTabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
+        // Clone to remove all event listeners
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+    });
+    
+    // Re-query after cloning
+    const newAdminTabBtns = document.querySelectorAll('.admin-tab-btn');
+    
+    // Admin tabs
+    newAdminTabBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
             const targetTab = btn.getAttribute('data-admin-tab');
             
+            if (!targetTab) return;
+            
             // Remove active from all tabs and contents
-            adminTabBtns.forEach(b => b.classList.remove('active'));
+            newAdminTabBtns.forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
             
             // Add active to clicked tab
@@ -386,6 +420,7 @@ function setupAdminEventListeners() {
             }
             
             // Load data for specific tab
+            console.log('Switching to tab:', targetTab);
             if (targetTab === 'stats') {
                 updateStats();
             } else if (targetTab === 'products') {
@@ -395,7 +430,7 @@ function setupAdminEventListeners() {
             } else if (targetTab === 'telegram') {
                 loadSettings();
             } else if (targetTab === 'export') {
-                // Export tab is ready
+                // Export tab is ready - no action needed
             }
         });
     });
@@ -403,19 +438,28 @@ function setupAdminEventListeners() {
     // Add product form
     const addProductForm = document.getElementById('addProductForm');
     if (addProductForm) {
-        addProductForm.addEventListener('submit', handleAddProduct);
+        // Remove existing listener
+        const newForm = addProductForm.cloneNode(true);
+        addProductForm.parentNode.replaceChild(newForm, addProductForm);
+        document.getElementById('addProductForm').addEventListener('submit', handleAddProduct);
     }
     
-    // Settings buttons
+    // Settings buttons - remove duplicates first
     const saveSettingsBtn = document.getElementById('saveSettingsBtn');
     if (saveSettingsBtn) {
-        saveSettingsBtn.addEventListener('click', saveSettings);
+        const newSaveBtn = saveSettingsBtn.cloneNode(true);
+        saveSettingsBtn.parentNode.replaceChild(newSaveBtn, saveSettingsBtn);
+        document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
     }
     
     const testTelegramBtn = document.getElementById('testTelegramBtn');
     if (testTelegramBtn) {
-        testTelegramBtn.addEventListener('click', testTelegram);
+        const newTestBtn = testTelegramBtn.cloneNode(true);
+        testTelegramBtn.parentNode.replaceChild(newTestBtn, testTelegramBtn);
+        document.getElementById('testTelegramBtn').addEventListener('click', testTelegram);
     }
+    
+    console.log('Admin event listeners setup completed');
 }
 
 function handleAddProduct(e) {
@@ -585,25 +629,26 @@ function updateStats() {
     const pendingOrdersEl = document.getElementById('pendingOrders');
     const totalRevenueEl = document.getElementById('totalRevenue');
     
-    if (totalProductsEl) {
-        totalProductsEl.textContent = (productsData && productsData.length) ? productsData.length : 0;
+    if (!totalProductsEl || !totalOrdersEl || !pendingOrdersEl || !totalRevenueEl) {
+        console.warn('Stats elements not found');
+        return;
     }
     
-    if (totalOrdersEl) {
-        totalOrdersEl.textContent = (orders && orders.length) ? orders.length : 0;
-    }
+    const productCount = (productsData && Array.isArray(productsData) && productsData.length) ? productsData.length : 0;
+    const orderCount = (orders && Array.isArray(orders) && orders.length) ? orders.length : 0;
+    const pending = (orders && Array.isArray(orders) && orders.length) 
+        ? orders.filter(o => o && o.status === 'pending').length 
+        : 0;
+    const revenue = (orders && Array.isArray(orders) && orders.length) 
+        ? orders.filter(o => o && o.status === 'completed').reduce((sum, o) => sum + (o.total || 0), 0)
+        : 0;
     
-    if (pendingOrdersEl) {
-        const pending = (orders && orders.length) ? orders.filter(o => o.status === 'pending').length : 0;
-        pendingOrdersEl.textContent = pending;
-    }
+    totalProductsEl.textContent = productCount;
+    totalOrdersEl.textContent = orderCount;
+    pendingOrdersEl.textContent = pending;
+    totalRevenueEl.textContent = formatPrice(revenue);
     
-    if (totalRevenueEl) {
-        const revenue = (orders && orders.length) 
-            ? orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + (o.total || 0), 0)
-            : 0;
-        totalRevenueEl.textContent = formatPrice(revenue);
-    }
+    console.log('Stats updated:', { productCount, orderCount, pending, revenue });
 }
 
 // Payment Method Change
@@ -1336,17 +1381,33 @@ function loadOrders() {
 function loadSettings() {
     const tokenEl = document.getElementById('telegramToken');
     const chatIdEl = document.getElementById('telegramChatId');
-    if (tokenEl && settings.token) {
+    
+    if (!tokenEl || !chatIdEl) {
+        console.warn('Settings elements not found');
+        return;
+    }
+    
+    if (settings && settings.token) {
         tokenEl.value = settings.token;
     }
-    if (chatIdEl && settings.chatId) {
+    if (settings && settings.chatId) {
         chatIdEl.value = settings.chatId;
     }
+    
+    console.log('Settings loaded:', { token: settings.token ? '***' : 'empty', chatId: settings.chatId || 'empty' });
 }
 
 function saveSettings() {
-    const token = document.getElementById('telegramToken').value.trim();
-    const chatId = document.getElementById('telegramChatId').value.trim();
+    const tokenEl = document.getElementById('telegramToken');
+    const chatIdEl = document.getElementById('telegramChatId');
+    
+    if (!tokenEl || !chatIdEl) {
+        showToast('Không tìm thấy form cài đặt!', 'error');
+        return;
+    }
+    
+    const token = tokenEl.value.trim();
+    const chatId = chatIdEl.value.trim();
     
     if (!token || !chatId) {
         showToast('Vui lòng nhập đầy đủ thông tin!', 'error');
