@@ -505,7 +505,29 @@ function setupNavigation() {
         btn.addEventListener('click', () => {
             const targetPage = btn.getAttribute('data-page');
             showPage(targetPage);
+            // Close mobile menu
+            const nav = document.getElementById('mainNav');
+            if (nav) nav.classList.remove('active');
         });
+    });
+
+    // Mobile menu toggle
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const mainNav = document.getElementById('mainNav');
+    if (mobileMenuToggle && mainNav) {
+        mobileMenuToggle.addEventListener('click', () => {
+            mainNav.classList.toggle('active');
+        });
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (mainNav && mobileMenuToggle && 
+            !mainNav.contains(e.target) && 
+            !mobileMenuToggle.contains(e.target) &&
+            mainNav.classList.contains('active')) {
+            mainNav.classList.remove('active');
+        }
     });
 }
 
@@ -740,12 +762,13 @@ function renderAdminOrders() {
 }
 
 function updateOrderStatus(orderId, newStatus) {
-    const order = orders.find(o => o.id === orderId);
+    const order = orders.find(o => o.id === orderId || String(o.id) === String(orderId));
     if (order) {
         order.status = newStatus;
         safeSetItem('orders', orders);
         renderAdminOrders();
         loadOrders();
+        updateStats();
         showToast('Đã cập nhật trạng thái đơn hàng!', 'success');
     }
 }
@@ -1359,6 +1382,13 @@ async function handleCheckout(e) {
         
         // Send to Telegram
         await sendToTelegram(order);
+        
+        // Generate and send PDF
+        try {
+            await generateAndSendPDF(order);
+        } catch (error) {
+            console.error('Error sending PDF:', error);
+        }
         
         // Clear cart
         cart = [];
@@ -1979,22 +2009,64 @@ function handleAddCoupon(e) {
     const code = document.getElementById('couponCode').value.trim().toUpperCase();
     const type = document.getElementById('couponType').value;
     const discount = parseFloat(document.getElementById('couponDiscount').value);
+    const expiryDate = document.getElementById('couponExpiryDate')?.value || '';
+    const description = document.getElementById('couponDescription')?.value.trim() || '';
     
     if (!code || !type || !discount || discount <= 0) {
         showToast('Vui lòng điền đầy đủ thông tin!', 'error');
         return;
     }
     
-    if (coupons[code]) {
+    if (coupons[code] && !document.getElementById('couponCode').hasAttribute('data-editing')) {
         showToast('Mã giảm giá đã tồn tại!', 'error');
         return;
     }
     
-    coupons[code] = { discount: discount, type: type };
+    const couponData = { 
+        discount: discount, 
+        type: type,
+        description: description
+    };
+    
+    if (expiryDate) {
+        couponData.expiryDate = expiryDate;
+    }
+    
+    coupons[code] = couponData;
     safeSetItem('coupons', coupons);
     renderAdminCoupons();
     document.getElementById('addCouponForm').reset();
+    const codeInput = document.getElementById('couponCode');
+    if (codeInput) {
+        codeInput.removeAttribute('data-editing');
+        codeInput.removeAttribute('readonly');
+    }
     showToast('Đã tạo mã giảm giá thành công!', 'success');
+}
+
+function editCoupon(code) {
+    const coupon = coupons[code];
+    if (!coupon) return;
+    
+    const codeInput = document.getElementById('couponCode');
+    const typeInput = document.getElementById('couponType');
+    const discountInput = document.getElementById('couponDiscount');
+    const expiryInput = document.getElementById('couponExpiryDate');
+    const descInput = document.getElementById('couponDescription');
+    
+    if (codeInput) {
+        codeInput.value = code;
+        codeInput.setAttribute('data-editing', 'true');
+        codeInput.setAttribute('readonly', 'readonly');
+    }
+    if (typeInput) typeInput.value = coupon.type || 'percent';
+    if (discountInput) discountInput.value = coupon.discount || 0;
+    if (expiryInput) expiryInput.value = coupon.expiryDate || '';
+    if (descInput) descInput.value = coupon.description || '';
+    
+    // Scroll to form
+    document.getElementById('addCouponForm')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showToast('Đã tải thông tin mã giảm giá. Chỉnh sửa và nhấn "Tạo Mã Giảm Giá" để cập nhật.', 'info');
 }
 
 function renderAdminCoupons() {
@@ -2038,7 +2110,7 @@ function deleteCoupon(code) {
     showToast('Đã xóa mã giảm giá!', 'success');
 }
 
-function deleteOrder(orderId) {
+async function deleteOrder(orderId) {
     if (!confirm('Bạn có chắc muốn xóa đơn hàng này? Hành động này không thể hoàn tác!')) {
         return;
     }
@@ -2055,6 +2127,18 @@ function deleteOrder(orderId) {
         return;
     }
     
+    // Generate and send PDF before deleting
+    showLoading(true);
+    try {
+        await generateAndSendPDF(order);
+        showToast('Đã gửi PDF vào Telegram!', 'success');
+    } catch (error) {
+        console.error('Error sending PDF:', error);
+        showToast('Lỗi khi gửi PDF, nhưng vẫn tiếp tục xóa đơn hàng', 'warning');
+    }
+    showLoading(false);
+    
+    // Delete order
     orders = orders.filter(o => o.id !== orderId && String(o.id) !== String(orderId));
     safeSetItem('orders', orders);
     renderAdminOrders();
@@ -2165,6 +2249,15 @@ function setupGlobalFunctions() {
         if (typeof exportData !== 'undefined') window.exportData = exportData;
         if (typeof importData !== 'undefined') window.importData = importData;
         if (typeof printOrder !== 'undefined') window.printOrder = printOrder;
+        if (typeof deleteOrder !== 'undefined') window.deleteOrder = deleteOrder;
+        if (typeof deleteCoupon !== 'undefined') window.deleteCoupon = deleteCoupon;
+        if (typeof openContactModal !== 'undefined') window.openContactModal = openContactModal;
+        if (typeof closeContactModal !== 'undefined') window.closeContactModal = closeContactModal;
+        if (typeof editCoupon !== 'undefined') window.editCoupon = editCoupon;
+        if (typeof resetRevenue !== 'undefined') window.resetRevenue = resetRevenue;
+        if (typeof clearAllOrders !== 'undefined') window.clearAllOrders = clearAllOrders;
+        if (typeof exportAllData !== 'undefined') window.exportAllData = exportAllData;
+        if (typeof backupData !== 'undefined') window.backupData = backupData;
         
         console.log('Global functions setup completed');
     } catch (error) {

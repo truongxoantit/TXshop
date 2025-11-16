@@ -9,6 +9,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
+    <!-- Top Contact Bar -->
+    <div class="top-contact-bar">
+        <div class="container">
+            <div class="contact-info">
+                <a href="tel:0376080498" class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <span>Hotline: 0376080498</span>
+                </a>
+                <a href="https://zalo.me/0376080498" target="_blank" class="contact-item">
+                    <i class="fab fa-zalo"></i>
+                    <span>Zalo: 0376080498</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="header">
         <div class="container">
@@ -17,38 +33,38 @@
                     <i class="fas fa-store"></i>
                     <span>TXshop</span>
                 </div>
-                <nav class="nav">
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <nav class="nav" id="mainNav">
                     <button class="nav-btn active" data-page="home">
-                        <i class="fas fa-home"></i> Trang Chủ
+                        <i class="fas fa-home"></i> <span class="nav-text">Trang Chủ</span>
                     </button>
                     <button class="nav-btn" data-page="cart">
-                        <i class="fas fa-shopping-cart"></i> Giỏ Hàng
+                        <i class="fas fa-shopping-cart"></i> <span class="nav-text">Giỏ Hàng</span>
                         <span class="cart-badge" id="cartBadge">0</span>
                     </button>
                     <button class="nav-btn" data-page="orders">
-                        <i class="fas fa-list-alt"></i> Đơn Hàng
+                        <i class="fas fa-list-alt"></i> <span class="nav-text">Đơn Hàng</span>
                     </button>
                     <button class="nav-btn" data-page="favorites">
-                        <i class="fas fa-heart"></i> Yêu Thích
+                        <i class="fas fa-heart"></i> <span class="nav-text">Yêu Thích</span>
                         <span class="cart-badge" id="favoritesBadge">0</span>
                     </button>
-                    <button class="nav-btn" onclick="openContactModal(); return false;">
-                        <i class="fas fa-comments"></i> Liên Hệ
-                    </button>
                     <button class="nav-btn admin-only" data-page="admin" id="adminNavBtn" style="display: none;">
-                        <i class="fas fa-user-shield"></i> Quản Trị
+                        <i class="fas fa-user-shield"></i> <span class="nav-text">Quản Trị</span>
                     </button>
                     <button class="nav-btn" id="registerBtn" style="display: none;">
-                        <i class="fas fa-user-plus"></i> Đăng Ký
+                        <i class="fas fa-user-plus"></i> <span class="nav-text">Đăng Ký</span>
                     </button>
                     <button class="nav-btn" id="loginBtn">
-                        <i class="fas fa-sign-in-alt"></i> Đăng Nhập
+                        <i class="fas fa-sign-in-alt"></i> <span class="nav-text">Đăng Nhập</span>
                     </button>
                     <button class="nav-btn" id="userLogoutBtn" style="display: none;">
-                        <i class="fas fa-sign-out-alt"></i> Đăng Xuất
+                        <i class="fas fa-sign-out-alt"></i> <span class="nav-text">Đăng Xuất</span>
                     </button>
                     <button class="nav-btn admin-only" id="logoutBtn" style="display: none;">
-                        <i class="fas fa-sign-out-alt"></i> Đăng Xuất Admin
+                        <i class="fas fa-sign-out-alt"></i> <span class="nav-text">Đăng Xuất Admin</span>
                     </button>
                 </nav>
             </div>
@@ -490,6 +506,23 @@
                                 <h3 id="totalRevenue">0đ</h3>
                                 <p>Tổng Doanh Thu</p>
                             </div>
+                        </div>
+                    </div>
+                    <div class="admin-section" style="margin-top: 30px;">
+                        <h3><i class="fas fa-tools"></i> Công Cụ Quản Lý</h3>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 20px;">
+                            <button class="btn btn-danger" onclick="resetRevenue()">
+                                <i class="fas fa-trash-alt"></i> Reset Doanh Thu
+                            </button>
+                            <button class="btn btn-warning" onclick="clearAllOrders()">
+                                <i class="fas fa-broom"></i> Xóa Tất Cả Đơn Hàng
+                            </button>
+                            <button class="btn btn-info" onclick="exportAllData()">
+                                <i class="fas fa-download"></i> Xuất Tất Cả Dữ Liệu
+                            </button>
+                            <button class="btn btn-success" onclick="backupData()">
+                                <i class="fas fa-database"></i> Backup Dữ Liệu
+                            </button>
                         </div>
                     </div>
                 </div>
