@@ -275,6 +275,7 @@ function initializeApp() {
         // Initialize
         initFilteredProducts();
         checkAdminStatus();
+        checkUserStatus();
         setupNavigation();
         renderProducts();
         updateCartBadge();
@@ -573,8 +574,10 @@ function setupAdminEventListeners() {
                 renderAdminOrders();
             } else if (targetTab === 'telegram') {
                 loadSettings();
+            } else if (targetTab === 'coupons') {
+                renderAdminCoupons();
             } else if (targetTab === 'export') {
-                // Export tab is ready - no action needed
+                setupExportImportListeners();
             }
         });
     });
@@ -601,6 +604,14 @@ function setupAdminEventListeners() {
         const newTestBtn = testTelegramBtn.cloneNode(true);
         testTelegramBtn.parentNode.replaceChild(newTestBtn, testTelegramBtn);
         document.getElementById('testTelegramBtn').addEventListener('click', testTelegram);
+    }
+    
+    // Coupon form
+    const addCouponForm = document.getElementById('addCouponForm');
+    if (addCouponForm) {
+        const newForm = addCouponForm.cloneNode(true);
+        addCouponForm.parentNode.replaceChild(newForm, addCouponForm);
+        document.getElementById('addCouponForm').addEventListener('submit', handleAddCoupon);
     }
     
     console.log('Admin event listeners setup completed');
@@ -1772,6 +1783,32 @@ function closeProductDetail() {
     }
 }
 
+// Setup Product Detail Modal
+function setupProductDetailModal() {
+    const modal = document.getElementById('productDetailModal');
+    if (!modal) return;
+    
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeProductDetail();
+        }
+    });
+    
+    // Close button
+    const closeBtn = modal.querySelector('.close-modal');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeProductDetail);
+    }
+    
+    // ESC key to close
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeProductDetail();
+        }
+    });
+}
+
 // Contact Shop Modal
 function openContactModal() {
     const modal = document.getElementById('contactShopModal');
@@ -1881,9 +1918,9 @@ function exportData(type) {
     showToast(`Đã xuất ${type === 'all' ? 'tất cả' : type} thành công!`, 'success');
 }
 
-function importData() {
-    const fileInput = document.getElementById('importFile');
-    if (!fileInput || !fileInput.files[0]) {
+function importData(e) {
+    const fileInput = e ? e.target : (document.getElementById('importFile') || document.getElementById('importFileInput'));
+    if (!fileInput || !fileInput.files || !fileInput.files[0]) {
         showToast('Vui lòng chọn file!', 'error');
         return;
     }
@@ -1891,16 +1928,18 @@ function importData() {
     const file = fileInput.files[0];
     const reader = new FileReader();
     
-    reader.onload = (e) => {
+    reader.onload = (event) => {
         try {
-            const data = JSON.parse(e.target.result);
+            const data = JSON.parse(event.target.result);
             
             if (data.products) {
                 productsData = data.products;
                 saveProducts();
                 initFilteredProducts();
                 renderProducts();
-                renderAdminProducts();
+                if (isAdmin) {
+                    renderAdminProducts();
+                }
             }
             
             if (data.orders) {
@@ -1909,24 +1948,64 @@ function importData() {
                 loadOrders();
                 if (isAdmin) {
                     renderAdminOrders();
+                    updateStats();
                 }
             }
             
             if (data.settings) {
                 settings = data.settings;
                 safeSetItem('telegramSettings', settings);
-                loadSettings();
+                if (isAdmin) {
+                    loadSettings();
+                }
             }
             
             showToast('Đã nhập dữ liệu thành công!', 'success');
             fileInput.value = '';
         } catch (error) {
             showToast('File không hợp lệ!', 'error');
-            console.error(error);
+            console.error('Import error:', error);
         }
     };
     
+    reader.onerror = () => {
+        showToast('Lỗi đọc file!', 'error');
+    };
+    
     reader.readAsText(file);
+}
+
+// Setup Export/Import Listeners
+function setupExportImportListeners() {
+    const exportProductsBtn = document.getElementById('exportProductsBtn');
+    const exportOrdersBtn = document.getElementById('exportOrdersBtn');
+    const importDataBtn = document.getElementById('importDataBtn');
+    const importFileInput = document.getElementById('importFileInput');
+    
+    if (exportProductsBtn) {
+        // Remove existing listener
+        const newBtn = exportProductsBtn.cloneNode(true);
+        exportProductsBtn.parentNode.replaceChild(newBtn, exportProductsBtn);
+        document.getElementById('exportProductsBtn').addEventListener('click', () => exportData('products'));
+    }
+    
+    if (exportOrdersBtn) {
+        const newBtn = exportOrdersBtn.cloneNode(true);
+        exportOrdersBtn.parentNode.replaceChild(newBtn, exportOrdersBtn);
+        document.getElementById('exportOrdersBtn').addEventListener('click', () => exportData('orders'));
+    }
+    
+    if (importDataBtn && importFileInput) {
+        const newBtn = importDataBtn.cloneNode(true);
+        importDataBtn.parentNode.replaceChild(newBtn, importDataBtn);
+        document.getElementById('importDataBtn').addEventListener('click', () => {
+            importFileInput.click();
+        });
+        
+        const newInput = importFileInput.cloneNode(true);
+        importFileInput.parentNode.replaceChild(newInput, importFileInput);
+        document.getElementById('importFileInput').addEventListener('change', importData);
+    }
 }
 
 // Print Order
